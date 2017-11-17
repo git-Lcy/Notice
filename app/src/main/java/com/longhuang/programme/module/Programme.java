@@ -1,14 +1,12 @@
 package com.longhuang.programme.module;
 
-import com.google.gson.Gson;
-
-import java.io.Serializable;
+import org.litepal.crud.DataSupport;
 
 /**
  * Created by Administrator on 2017/11/14.
  */
 
-public class Programme  {
+public class Programme extends DataSupport {
 
     private String message;//提醒信息
 

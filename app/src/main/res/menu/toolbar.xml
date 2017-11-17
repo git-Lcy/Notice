@@ -8,7 +8,7 @@
         app:showAsAction="always"/>
     <item
         android:id="@+id/add"
-        android:icon="@mipmap/ic_calendar"
+        android:icon="@mipmap/ic_add_key_inside"
         android:title="add"
         app:showAsAction="always"/>
 </menu>

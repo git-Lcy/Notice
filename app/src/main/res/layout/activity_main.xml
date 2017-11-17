@@ -43,14 +43,15 @@
             android:id="@+id/voice_input"
             android:gravity="center"
             android:text="按住说话"
+            android:visibility="gone"
             android:background="@mipmap/programme_info_text"
             android:layout_weight="1"/>
-        <ImageView
+        <Button
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:text="发送"
             android:contentDescription="点击发送消息"
-            android:src="@drawable/send_message_icon"
-            android:padding="5dp"
-            android:id="@+id/send_voice"/>
+            android:drawable="@drawable/send_message_icon"
+            android:id="@+id/send_message"/>
     </LinearLayout>
 </RelativeLayout>
