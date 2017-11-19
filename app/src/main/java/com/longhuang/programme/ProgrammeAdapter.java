@@ -126,6 +126,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
 
     public void deleteSelected(){
         for (Programme programme : programmeCache){
+            programme.delete();
             programmeList.remove(programme);
         }
         notifyDataSetChanged();

@@ -51,6 +51,7 @@
         <Button
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:enabled="false"
             android:background="@drawable/send_message_icon"
             android:id="@+id/send_message"/>
     </LinearLayout>
