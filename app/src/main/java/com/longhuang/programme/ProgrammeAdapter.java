@@ -18,6 +18,7 @@ import org.litepal.tablemanager.Connector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Administrator on 2017/11/17.
@@ -25,6 +26,7 @@ import java.util.List;
 
 public class ProgrammeAdapter extends RecyclerView.Adapter {
 
+    private List<Programme> programmeCache ;
     private List<Programme> programmeList ;
     private LayoutInflater inflater;
     private Context context;
@@ -35,6 +37,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         Connector.getDatabase();
         programmeList = DataSupport.findAll(Programme.class);
         if (programmeList==null) programmeList = new ArrayList<>();
+        programmeCache = new ArrayList<>();
     }
     public void addProgramme(Programme programme){
         programmeList.add(programme);
@@ -56,15 +59,17 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         programmeHolder.timeInfo.setText(programme.getTime());
         programmeHolder.ringing.setChecked(programme.isRinging());
         programmeHolder.vibrate.setChecked(programme.isVibrate());
-        programmeHolder.pilotLamp.setChecked(programme.isPilotLamp());
-        programmeHolder.layout.setOnLongClickListener(new View.OnLongClickListener() {
+        programmeHolder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(context,"删除提醒",Toast.LENGTH_SHORT).show();
-                programme.delete();
-                programmeList.remove(position);
-                notifyItemRemoved(position);
-                return true;
+            public void onClick(View v) {
+                if (programmeCache==null) programmeCache = new ArrayList<>();
+                boolean selected = programmeHolder.layout.isSelected();
+                if (selected){
+                    programmeCache.remove(programme);
+                }else {
+                    programmeCache.add(programme);
+                }
+                programmeHolder.layout.setSelected(!selected);
             }
         });
         programmeHolder.ringing.setOnTouchListener(new View.OnTouchListener() {
@@ -93,19 +98,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
                 return false;
             }
         });
-        programmeHolder.pilotLamp.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    boolean isPilotLamp = !programmeHolder.pilotLamp.isChecked();
-                    programmeHolder.pilotLamp.setChecked(isPilotLamp);
-                    programme.setVibrate(isPilotLamp);
-                    programme.save();
-                    return true;
-                }
-                return false;
-            }
-        });
+
     }
 
     @Override
@@ -119,7 +112,6 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         private TextView messageInfo;
         private CheckBox vibrate;//震动
         private CheckBox ringing;//铃声
-        private CheckBox pilotLamp;//指示灯
 
         public ProgrammeHolder(View itemView) {
             super(itemView);
@@ -128,8 +120,34 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             messageInfo = itemView.findViewById(R.id.programme_message);
             vibrate = itemView.findViewById(R.id.programme_switch_vibrate);
             ringing = itemView.findViewById(R.id.programme_switch_ringing);
-            pilotLamp = itemView.findViewById(R.id.programme_switch_pilot_lamp);
 
         }
+    }
+
+    public void deleteSelected(){
+        for (Programme programme : programmeCache){
+            programmeList.remove(programme);
+        }
+        notifyDataSetChanged();
+    }
+    public int editType(){
+        int size = programmeCache.size();
+        if (size == 0) return 0;
+        if (size == 1) return 1;
+        return -1;
+    }
+    public void add(Programme programme){
+        if (programmeCache.size()==0){
+            programmeList.add(0,programme);
+            notifyItemInserted(0);
+            return;
+        }
+        Programme editProgramme = programmeCache.get(0);
+        editProgramme.setDescription(programme.getDescription());
+        editProgramme.setMessage(programme.getMessage());
+        editProgramme.setRinging(programme.isRinging());
+        editProgramme.setVibrate(programme.isVibrate());
+        editProgramme.setRingingUrl(programme.getRingingUrl());
+        editProgramme.setTime(programme.getTime());
     }
 }

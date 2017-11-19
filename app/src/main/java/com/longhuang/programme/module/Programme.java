@@ -36,10 +36,6 @@ public class Programme extends DataSupport {
         isRinging = ringing;
     }
 
-    public void setPilotLamp(boolean pilotLamp) {
-        isPilotLamp = pilotLamp;
-    }
-
     public void setTime(String time) {
         this.time = time;
     }
@@ -65,9 +61,6 @@ public class Programme extends DataSupport {
         return isRinging;
     }
 
-    public boolean isPilotLamp() {
-        return isPilotLamp;
-    }
 
     public String getTime() {
         return time;

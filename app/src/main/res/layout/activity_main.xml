@@ -23,23 +23,25 @@
         android:layout_marginRight="18dp"
         android:layout_marginLeft="18dp"
         android:layout_marginBottom="3dp"
+        android:gravity="bottom"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true">
         <CheckBox
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:id="@+id/switch_input_mode"
+            android:checked="true"
             android:background="@drawable/switch_input_icon"
             android:button="@null"/>
         <EditText
             android:layout_width="0dp"
-            android:layout_height="45dp"
+            android:layout_height="50dp"
             android:id="@+id/text_input"
             android:background="@mipmap/programme_info_text"
             android:layout_weight="1"/>
         <Button
             android:layout_width="0dp"
-            android:layout_height="45dp"
+            android:layout_height="50dp"
             android:id="@+id/voice_input"
             android:gravity="center"
             android:text="按住说话"
@@ -49,9 +51,7 @@
         <Button
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:text="发送"
-            android:contentDescription="点击发送消息"
-            android:drawable="@drawable/send_message_icon"
+            android:background="@drawable/send_message_icon"
             android:id="@+id/send_message"/>
     </LinearLayout>
 </RelativeLayout>

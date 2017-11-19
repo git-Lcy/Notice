@@ -3,12 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/skin"
-        android:icon="@mipmap/ic_calendar"
+        android:icon="@mipmap/change_skip"
         android:title="skin"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/delete"
+        android:icon="@mipmap/delete"
+        android:title="delete"
         app:showAsAction="always"/>
     <item
         android:id="@+id/add"
-        android:icon="@mipmap/ic_add_key_inside"
+        android:icon="@mipmap/edit_icon"
         android:title="add"
         app:showAsAction="always"/>
 </menu>

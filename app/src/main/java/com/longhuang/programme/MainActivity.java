@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -18,9 +19,11 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import com.longhuang.programme.module.Programme;
+import com.longhuang.programme.utils.L;
 
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
 
 public class MainActivity extends BaseActivity  {
 
@@ -57,7 +60,14 @@ public class MainActivity extends BaseActivity  {
 
                 break;
             case R.id.add:
+                if (adapter!=null){
 
+                }
+                break;
+            case R.id.delete:
+                if (adapter!=null){
+                    adapter.deleteSelected();
+                }
                 break;
         }
         return true;
@@ -95,7 +105,8 @@ public class MainActivity extends BaseActivity  {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                L.e(getClass(),"count = "+count);
+                sendMessage.setEnabled(!(s.length()==0));
             }
             @Override
             public void afterTextChanged(Editable s) {
