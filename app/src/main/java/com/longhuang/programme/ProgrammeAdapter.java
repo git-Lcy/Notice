@@ -12,11 +12,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.longhuang.programme.module.Programme;
+import com.longhuang.programme.utils.ProgrammeComparator;
 
 import org.litepal.crud.DataSupport;
 import org.litepal.tablemanager.Connector;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -37,12 +39,11 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         Connector.getDatabase();
         programmeList = DataSupport.findAll(Programme.class);
         if (programmeList==null) programmeList = new ArrayList<>();
+        Collections.reverse(programmeList);
+        //programmeList.sort(new ProgrammeComparator());
         programmeCache = new ArrayList<>();
     }
-    public void addProgramme(Programme programme){
-        programmeList.add(programme);
-        notifyItemInserted(programmeList.size()-1);
-    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = inflater.inflate(R.layout.programme_item,parent,false);
@@ -56,20 +57,29 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         final Programme programme = programmeList.get(position);
         final ProgrammeHolder programmeHolder = (ProgrammeHolder)holder;
         programmeHolder.messageInfo.setText(programme.getMessage());
-        programmeHolder.timeInfo.setText(programme.getTime());
+        String time = programme.getTime();
+        if (time==null || time.isEmpty()){
+            programmeHolder.timeInfo.setVisibility(View.GONE);
+        }else {
+            programmeHolder.timeInfo.setVisibility(View.VISIBLE);
+            programmeHolder.timeInfo.setText(time);
+        }
+
         programmeHolder.ringing.setChecked(programme.isRinging());
         programmeHolder.vibrate.setChecked(programme.isVibrate());
+        programmeHolder.layout.setBackgroundColor(programme.isSelected ? 0x6B79C4 : 0x00ffffff);
         programmeHolder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (programmeCache==null) programmeCache = new ArrayList<>();
-                boolean selected = programmeHolder.layout.isSelected();
+                boolean selected = programme.isSelected;
                 if (selected){
                     programmeCache.remove(programme);
                 }else {
                     programmeCache.add(programme);
                 }
-                programmeHolder.layout.setSelected(!selected);
+                programme.isSelected = !selected;
+                notifyDataSetChanged();
             }
         });
         programmeHolder.ringing.setOnTouchListener(new View.OnTouchListener() {
@@ -124,6 +134,10 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         }
     }
 
+    public void addProgramme(Programme programme){
+        programmeList.add(0,programme);
+        notifyItemInserted(0);
+    }
     public void deleteSelected(){
         for (Programme programme : programmeCache){
             programme.delete();

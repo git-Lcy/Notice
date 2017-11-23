@@ -2,11 +2,17 @@ package com.longhuang.programme.module;
 
 import org.litepal.crud.DataSupport;
 
+import java.util.Comparator;
+
 /**
  * Created by Administrator on 2017/11/14.
  */
 
 public class Programme extends DataSupport {
+
+    public  boolean isSelected;
+
+    private boolean isExecuted; //是否已经执行
 
     private String message;//提醒信息
 
@@ -20,6 +26,13 @@ public class Programme extends DataSupport {
 
     private String time;//提醒时间
 
+    public boolean isExecuted() {
+        return isExecuted;
+    }
+
+    public void setExecuted(boolean executed) {
+        isExecuted = executed;
+    }
     public void setMessage(String message) {
         this.message = message;
     }
@@ -74,5 +87,4 @@ public class Programme extends DataSupport {
 
     public Programme(){
     }
-
 }

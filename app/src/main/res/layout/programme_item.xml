@@ -4,35 +4,39 @@
 	android:layout_width="match_parent"
 	android:layout_height="60dp"
 	android:orientation="horizontal"
-	android:background="@drawable/switch_group_view_bg"
 	android:gravity="center_vertical"
+	android:layout_marginTop="5dp"
 	android:id="@+id/programme_item">
+
 	<LinearLayout
 		android:layout_width="0dp"
 		android:layout_height="60dp"
 		android:layout_weight="1"
 		android:orientation="vertical">
+
 		<TextView
+			android:id="@+id/programme_time"
 			android:layout_width="match_parent"
 			android:layout_height="0dp"
 			android:layout_weight="3"
-			android:textColor="@color/colorGary"
-			android:textSize="13sp"
 			android:gravity="bottom"
 			android:paddingLeft="5dp"
-			tools:text="11.13-13:23:45"
-			android:id="@+id/programme_time"/>
+			android:textColor="@color/colorGary"
+			android:textSize="13sp"
+			android:singleLine="true"
+			tools:text="11.13-13:23:45"/>
+
 		<TextView
+			android:id="@+id/programme_message"
 			android:layout_width="match_parent"
 			android:layout_height="0dp"
 			android:layout_weight="5"
+			android:gravity="center_vertical"
+			android:paddingLeft="5dp"
 			android:singleLine="true"
 			android:textColor="@color/colorBlack"
 			android:textSize="20sp"
-			android:gravity="center_vertical"
-			android:paddingLeft="5dp"
-			tools:text="电源适配器吃饭睡觉打豆豆"
-			android:id="@+id/programme_message"/>
+			tools:text="电源适配器吃饭睡觉打豆豆" />
 	</LinearLayout>
 	<CheckBox
 		android:layout_width="45dp"

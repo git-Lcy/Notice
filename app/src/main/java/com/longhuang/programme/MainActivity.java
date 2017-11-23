@@ -105,7 +105,6 @@ public class MainActivity extends BaseActivity  {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                L.e(getClass(),"count = "+count);
                 sendMessage.setEnabled(!(s.length()==0));
             }
             @Override
