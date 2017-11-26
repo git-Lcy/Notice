@@ -12,11 +12,14 @@ public class L {
     private static final boolean DEBUG = true;
     private static Toast toast;
 
-    public static void e(Class c,String info){
-        if (DEBUG)Log.e(c.getSimpleName(),info);
+    public static void e(String TAG,String info){
+        if (DEBUG)Log.e(TAG,info);
+    }
+    public static void d(String TAG,String info){
+        if (DEBUG)Log.d(TAG,info);
     }
 
-    public void shortShow(Context context,String info){
+    public static void toast(Context context,String info){
         if (toast==null) {
             toast = Toast.makeText(context,info,Toast.LENGTH_SHORT);
         }else {

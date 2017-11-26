@@ -15,4 +15,8 @@ public class BaseActivity extends AppCompatActivity  {
 
     }
 
+    public boolean isVoiceViewPressed(){
+        return false;
+    }
+
 }

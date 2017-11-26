@@ -2,6 +2,7 @@ package com.longhuang.programme;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,6 +41,9 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         programmeList = DataSupport.findAll(Programme.class);
         if (programmeList==null) programmeList = new ArrayList<>();
         Collections.reverse(programmeList);
+        for (Programme p : programmeList){
+            p.isSelected=false;
+        }
         //programmeList.sort(new ProgrammeComparator());
         programmeCache = new ArrayList<>();
     }
@@ -57,17 +61,19 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         final Programme programme = programmeList.get(position);
         final ProgrammeHolder programmeHolder = (ProgrammeHolder)holder;
         programmeHolder.messageInfo.setText(programme.getMessage());
-        String time = programme.getTime();
-        if (time==null || time.isEmpty()){
+        String time = programme.getTimeInfo();
+        if (TextUtils.isEmpty(time)){
             programmeHolder.timeInfo.setVisibility(View.GONE);
         }else {
+
             programmeHolder.timeInfo.setVisibility(View.VISIBLE);
             programmeHolder.timeInfo.setText(time);
         }
 
         programmeHolder.ringing.setChecked(programme.isRinging());
         programmeHolder.vibrate.setChecked(programme.isVibrate());
-        programmeHolder.layout.setBackgroundColor(programme.isSelected ? 0x6B79C4 : 0x00ffffff);
+        programmeHolder.layout.setBackgroundColor(
+                context.getResources().getColor(programme.isSelected ? R.color.colorItemBg : R.color.transparent));
         programmeHolder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,6 +86,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
                 }
                 programme.isSelected = !selected;
                 notifyDataSetChanged();
+
             }
         });
         programmeHolder.ringing.setOnTouchListener(new View.OnTouchListener() {

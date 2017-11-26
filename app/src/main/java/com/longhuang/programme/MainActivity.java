@@ -1,6 +1,9 @@
 package com.longhuang.programme;
 
+import android.app.Activity;
 import android.app.AlarmManager;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,18 +12,27 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import com.iflytek.cloud.ErrorCode;
+import com.iflytek.cloud.InitListener;
+
 import com.longhuang.programme.module.Programme;
+import com.longhuang.programme.utils.ActivityHandler;
 import com.longhuang.programme.utils.L;
 
+import org.litepal.util.LogUtil;
+
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
@@ -34,6 +46,7 @@ public class MainActivity extends BaseActivity  {
     private Button sendMessage;
 
     private ProgrammeAdapter adapter;
+    private ActivityHandler handle;
 
     private List<Programme> programmeList;
     private AlarmManager manager;
@@ -81,7 +94,18 @@ public class MainActivity extends BaseActivity  {
 
     }
 
+
     private void initEvent(){
+        handle = new ActivityHandler(this, ActivityHandler.TYPE_MAIN, new InitListener() {
+            @Override
+            public void onInit(int i) {
+                if (i != ErrorCode.SUCCESS){
+                    L.toast(MainActivity.this,"语音功能不可用");
+                    voiceInput.setEnabled(false);
+                }
+            }
+        });
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ProgrammeAdapter(this);
         recyclerView.setAdapter(adapter );
@@ -113,11 +137,24 @@ public class MainActivity extends BaseActivity  {
             }
         });
 
+
         voiceInput.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-                return false;
+                if (!voiceInput.isEnabled()){
+                    return true;
+                }
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        voiceInput.setPressed(true);
+                        handle.sendMessageDelayed(handle.obtainMessage(ActivityHandler.MEG_START_LISTENING),150);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        L.e("MotionEvent","---------- MotionEvent.ACTION_UP  ");
+                        voiceInput.setPressed(false);
+                        handle.sendEmptyMessage(ActivityHandler.MSG_STOP_LISTENING);
+                }
+                return true;
             }
         });
         sendMessage.setOnClickListener(new View.OnClickListener() {
@@ -128,9 +165,23 @@ public class MainActivity extends BaseActivity  {
                 Programme programme = new Programme();
                 programme.setMessage(message);
                 programme.save();
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm !=null ){
+                    imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+
                 adapter.addProgramme(programme);
             }
         });
+
+    }
+
+    @Override
+    public boolean isVoiceViewPressed(){
+        return voiceInput.isPressed();
+    }
+    public void addProgramme(Programme programme){
+        adapter.addProgramme(programme);
     }
 
 }

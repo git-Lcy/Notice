@@ -39,14 +39,20 @@
 			tools:text="电源适配器吃饭睡觉打豆豆" />
 	</LinearLayout>
 	<CheckBox
-		android:layout_width="45dp"
-		android:layout_height="45dp"
+		android:layout_width="40dp"
+		android:layout_height="40dp"
+		android:id="@+id/programme_play_voice"
+		android:button="@null"
+		android:background="@drawable/switch_ringing_checked"/>
+	<CheckBox
+		android:layout_width="40dp"
+		android:layout_height="40dp"
 		android:id="@+id/programme_switch_ringing"
 		android:button="@null"
 		android:background="@drawable/switch_ringing_checked"/>
 	<CheckBox
-		android:layout_width="45dp"
-		android:layout_height="45dp"
+		android:layout_width="40dp"
+		android:layout_height="40dp"
 		android:id="@+id/programme_switch_vibrate"
 		android:button="@null"
 		android:background="@drawable/switch_vibrate_checked"/>

@@ -1,5 +1,7 @@
 package com.longhuang.programme.module;
 
+import android.text.TextUtils;
+
 import org.litepal.crud.DataSupport;
 
 import java.util.Comparator;
@@ -10,9 +12,11 @@ import java.util.Comparator;
 
 public class Programme extends DataSupport {
 
-    public  boolean isSelected;
+    public boolean isSelected;
 
     private boolean isExecuted; //是否已经执行
+
+    private int repeatType; //重复类型 0：不重复、1：每天、2：每两天。。。
 
     private String message;//提醒信息
 
@@ -22,9 +26,12 @@ public class Programme extends DataSupport {
 
     private boolean isRinging;//铃声
 
-    private boolean isPilotLamp;//指示灯
+    private String date;//日期
 
-    private String time;//提醒时间
+    private String time;//日期
+
+    private String timestamp;//时间戳
+
 
     public boolean isExecuted() {
         return isExecuted;
@@ -32,6 +39,13 @@ public class Programme extends DataSupport {
 
     public void setExecuted(boolean executed) {
         isExecuted = executed;
+    }
+    public int getRepeatType() {
+        return repeatType;
+    }
+
+    public void setRepeat(int repeat) {
+        repeatType = repeat;
     }
     public void setMessage(String message) {
         this.message = message;
@@ -49,8 +63,8 @@ public class Programme extends DataSupport {
         isRinging = ringing;
     }
 
-    public void setTime(String time) {
-        this.time = time;
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public void setRingingUrl(String ringingUrl) {
@@ -75,8 +89,24 @@ public class Programme extends DataSupport {
     }
 
 
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public String getTime() {
         return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getDate() {
+        return date;
     }
 
     public String getRingingUrl() {
@@ -86,5 +116,35 @@ public class Programme extends DataSupport {
     private String ringingUrl;
 
     public Programme(){
+    }
+
+    public String getTimeInfo(){
+        if(TextUtils.isEmpty(time)) return "";
+        String date = "";
+        if (repeatType == 0){
+            date = this.date+" ";
+        }
+        if (repeatType == 1){
+            date = "每天 ";
+        }
+        if (repeatType == 2){
+            date = "每2天 ";
+        }
+        if (repeatType == 3){
+            date = "每3天 ";
+        }
+        if (repeatType == 4){
+            date = "每4天 ";
+        }
+        if (repeatType == 5){
+            date = "每5天 ";
+        }
+        if (repeatType == 6){
+            date = "每6天 ";
+        }
+        if (repeatType == 7){
+            date = "每7天 ";
+        }
+        return date+time;
     }
 }
