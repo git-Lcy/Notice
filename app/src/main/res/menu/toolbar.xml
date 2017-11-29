@@ -4,17 +4,22 @@
     <item
         android:id="@+id/skin"
         android:icon="@mipmap/change_skip"
-        android:title="skin"
+        android:title="换肤"
         app:showAsAction="ifRoom"/>
 
     <item
+        android:id="@+id/date"
+        android:icon="@mipmap/app_label"
+        android:title="日期"
+        app:showAsAction="always"/>
+    <item
         android:id="@+id/delete"
         android:icon="@mipmap/delete"
-        android:title="delete"
+        android:title="删除"
         app:showAsAction="always"/>
     <item
         android:id="@+id/add"
         android:icon="@mipmap/edit_icon"
-        android:title="add"
+        android:title="编辑"
         app:showAsAction="always"/>
 </menu>

@@ -65,7 +65,6 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         if (TextUtils.isEmpty(time)){
             programmeHolder.timeInfo.setVisibility(View.GONE);
         }else {
-
             programmeHolder.timeInfo.setVisibility(View.VISIBLE);
             programmeHolder.timeInfo.setText(time);
         }
@@ -85,7 +84,8 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
                     programmeCache.add(programme);
                 }
                 programme.isSelected = !selected;
-                notifyDataSetChanged();
+         //       notifyDataSetChanged();
+                notifyItemChanged(position);
 
             }
         });
@@ -141,7 +141,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public void addProgramme(Programme programme){
+    public void insertProgramme(Programme programme){
         programmeList.add(0,programme);
         notifyItemInserted(0);
     }

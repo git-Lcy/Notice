@@ -1,18 +1,14 @@
 package com.longhuang.programme;
 
-import android.app.Activity;
-import android.app.AlarmManager;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -29,19 +25,14 @@ import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechSynthesizer;
-import com.iflytek.cloud.SynthesizerListener;
 import com.longhuang.programme.Imp.MyRecognizerListener;
 import com.longhuang.programme.Imp.MySynthesizerListener;
 import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
 import com.longhuang.programme.utils.L;
 
-import org.litepal.util.LogUtil;
-
 import java.lang.ref.WeakReference;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+
 
 public class MainActivity extends BaseActivity  {
 
@@ -53,13 +44,13 @@ public class MainActivity extends BaseActivity  {
 
     private ProgrammeAdapter adapter;
     private MyHandler handle;
-    private List<Programme> programmeList;
-    private AlarmManager manager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.tool_bar);
+
+        Toolbar toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
 
         initView();
@@ -77,15 +68,21 @@ public class MainActivity extends BaseActivity  {
             case R.id.skin:
 
                 break;
-            case R.id.add:
-                if (adapter!=null){
+            case R.id.date:
 
-                }
+                break;
+            case R.id.add:
+                if (adapter == null) break;
+                int type = adapter.editType();
+                if (type == -1) break;
+                Intent intent = new Intent(this,ProgrammeMenuActivity.class);
+                intent.putExtra("EditType",type);
+                startActivity(intent);
+
                 break;
             case R.id.delete:
-                if (adapter!=null){
-                    adapter.deleteSelected();
-                }
+                if (adapter == null) break;
+                adapter.deleteSelected();
                 break;
         }
         return true;
@@ -163,7 +160,7 @@ public class MainActivity extends BaseActivity  {
                 if (imm !=null ){
                     imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
                 }
-                adapter.addProgramme(programme);
+                adapter.insertProgramme(programme);
             }
         });
     }
@@ -225,7 +222,7 @@ public class MainActivity extends BaseActivity  {
                     }
                     String resultInfo = (String)msg.obj;
                     Programme programme = Global.saveProgramme(resultInfo);
-                    weakReference.get().adapter.addProgramme(programme);
+                    weakReference.get().adapter.insertProgramme(programme);
                     break;
                 case MyRecognizerListener.MSG_PARSE_ERR:
                     if (weakReference.get().voiceInput.isPressed()){
