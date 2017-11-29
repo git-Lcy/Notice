@@ -26,16 +26,22 @@ import android.widget.EditText;
 import com.iflytek.cloud.ErrorCode;
 import com.iflytek.cloud.InitListener;
 
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechRecognizer;
+import com.iflytek.cloud.SpeechSynthesizer;
+import com.iflytek.cloud.SynthesizerListener;
+import com.longhuang.programme.Imp.MyRecognizerListener;
+import com.longhuang.programme.Imp.MySynthesizerListener;
 import com.longhuang.programme.module.Programme;
-import com.longhuang.programme.utils.ActivityHandler;
+import com.longhuang.programme.utils.Global;
 import com.longhuang.programme.utils.L;
 
 import org.litepal.util.LogUtil;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.logging.Level;
 
 public class MainActivity extends BaseActivity  {
 
@@ -46,8 +52,7 @@ public class MainActivity extends BaseActivity  {
     private Button sendMessage;
 
     private ProgrammeAdapter adapter;
-    private ActivityHandler handle;
-
+    private MyHandler handle;
     private List<Programme> programmeList;
     private AlarmManager manager;
     @Override
@@ -96,16 +101,7 @@ public class MainActivity extends BaseActivity  {
 
 
     private void initEvent(){
-        handle = new ActivityHandler(this, ActivityHandler.TYPE_MAIN, new InitListener() {
-            @Override
-            public void onInit(int i) {
-                if (i != ErrorCode.SUCCESS){
-                    L.toast(MainActivity.this,"语音功能不可用");
-                    voiceInput.setEnabled(false);
-                }
-            }
-        });
-
+        handle = new MyHandler(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ProgrammeAdapter(this);
         recyclerView.setAdapter(adapter );
@@ -147,12 +143,12 @@ public class MainActivity extends BaseActivity  {
                 switch (event.getAction()){
                     case MotionEvent.ACTION_DOWN:
                         voiceInput.setPressed(true);
-                        handle.sendMessageDelayed(handle.obtainMessage(ActivityHandler.MEG_START_LISTENING),150);
+                        handle.sendMessageDelayed(handle.obtainMessage(MyHandler.MEG_START_LISTENING),200);
                         break;
                     case MotionEvent.ACTION_UP:
-                        L.e("MotionEvent","---------- MotionEvent.ACTION_UP  ");
+
                         voiceInput.setPressed(false);
-                        handle.sendEmptyMessage(ActivityHandler.MSG_STOP_LISTENING);
+                        handle.sendEmptyMessage(MyHandler.MSG_STOP_LISTENING);
                 }
                 return true;
             }
@@ -162,26 +158,83 @@ public class MainActivity extends BaseActivity  {
             public void onClick(View v) {
                 String message = textInput.getText().toString();
                 textInput.setText("");
-                Programme programme = new Programme();
-                programme.setMessage(message);
-                programme.save();
+                Programme programme = Global.saveProgramme(message);
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 if (imm !=null ){
                     imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
                 }
-
                 adapter.addProgramme(programme);
             }
         });
-
     }
 
-    @Override
-    public boolean isVoiceViewPressed(){
-        return voiceInput.isPressed();
-    }
-    public void addProgramme(Programme programme){
-        adapter.addProgramme(programme);
-    }
+    static class MyHandler extends Handler  {
+        public static final int MEG_START_LISTENING = 1;
+        public static final int MSG_STOP_LISTENING = 2;
 
+        private SpeechRecognizer speechRecognizer;
+
+        private MyRecognizerListener mRecognizerListener;
+        private WeakReference<MainActivity> weakReference;
+        public MyHandler (MainActivity activity){
+            weakReference = new WeakReference<MainActivity>(activity);
+            speechRecognizer = SpeechRecognizer.createRecognizer(activity, new InitListener() {
+                @Override
+                public void onInit(int i) {
+                    if (i == ErrorCode.SUCCESS){
+                        speechRecognizer.setParameter(SpeechConstant.KEY_SPEECH_TIMEOUT,"30000");
+                        speechRecognizer.setParameter(SpeechConstant.VAD_BOS,"8000");
+                        speechRecognizer.setParameter(SpeechConstant.VAD_EOS,"8000");
+                        Global.VOICE_ENABLE = true;
+                    }else {
+                        L.toast(weakReference.get(),"语音功能不可用 -- ERROR = "+i);
+                        weakReference.get().voiceInput.setEnabled(false);
+                        Global.VOICE_ENABLE = false;
+                    }
+                }
+            });
+            SpeechSynthesizer.createSynthesizer(activity, new InitListener() {
+                @Override
+                public void onInit(int i) {
+                    if (i != ErrorCode.SUCCESS){
+                        L.toast(weakReference.get(),"语音功能不可用 -- ERROR = "+i);
+                        weakReference.get().voiceInput.setEnabled(false);
+                        Global.VOICE_ENABLE = false;
+                    }
+                }
+            });
+            mRecognizerListener = new MyRecognizerListener(this);
+        }
+
+        @Override
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case MEG_START_LISTENING:
+                    if (weakReference.get().voiceInput.isPressed())
+                        speechRecognizer.startListening(mRecognizerListener);
+                    break;
+                case MSG_STOP_LISTENING:
+                    if (speechRecognizer.isListening()){
+                        speechRecognizer.stopListening();
+                    }
+                    break;
+                case MyRecognizerListener.MSG_PARSE_JSON:
+                    speechRecognizer.stopListening();
+                    if (weakReference.get().voiceInput.isPressed()){
+                        weakReference.get().voiceInput.setPressed(false);
+                    }
+                    String resultInfo = (String)msg.obj;
+                    Programme programme = Global.saveProgramme(resultInfo);
+                    weakReference.get().adapter.addProgramme(programme);
+                    break;
+                case MyRecognizerListener.MSG_PARSE_ERR:
+                    if (weakReference.get().voiceInput.isPressed()){
+                        weakReference.get().voiceInput.setPressed(false);
+                    }
+                   if (SpeechSynthesizer.getSynthesizer() != null) SpeechSynthesizer.getSynthesizer().startSpeaking("对不起，我没听清楚",new MySynthesizerListener());
+                    break;
+            }
+        }
+
+    }
 }
