@@ -8,8 +8,6 @@ import android.text.TextUtils;
 import com.iflytek.cloud.RecognizerListener;
 import com.iflytek.cloud.RecognizerResult;
 import com.iflytek.cloud.SpeechError;
-import com.iflytek.cloud.SpeechSynthesizer;
-import com.longhuang.programme.utils.Global;
 import com.longhuang.programme.utils.L;
 import com.longhuang.programme.utils.ThreadPoolManager;
 
