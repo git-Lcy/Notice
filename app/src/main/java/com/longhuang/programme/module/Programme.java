@@ -26,12 +26,25 @@ public class Programme extends DataSupport {
 
     private boolean isRinging;//铃声
 
-    private String date;//日期
+    private String ringingPath;//铃声目录
 
-    private String time;//日期
+    private String date;//日期 2017-11-08
 
-    private String timestamp;//时间戳
+    private String time;//时间 13:18:05
 
+    private String programmeId;//唯一标识 时间戳
+
+    public void setRepeatType(int repeatType) {
+        this.repeatType = repeatType;
+    }
+
+    public String getRingingPath() {
+        return ringingPath;
+    }
+
+    public void setRingingPath(String ringingPath) {
+        this.ringingPath = ringingPath;
+    }
 
     public boolean isExecuted() {
         return isExecuted;
@@ -88,13 +101,12 @@ public class Programme extends DataSupport {
         return isRinging;
     }
 
-
-    public String getTimestamp() {
-        return timestamp;
+    public String getProgrammeId() {
+        return programmeId;
     }
 
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
+    public void setProgrammeId(String programmeId) {
+        this.programmeId = programmeId;
     }
 
     public String getTime() {

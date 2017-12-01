@@ -8,8 +8,8 @@
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/date"
-        android:icon="@mipmap/app_label"
+        android:id="@+id/calendar"
+        android:icon="@drawable/calendar_selector"
         android:title="日期"
         app:showAsAction="always"/>
     <item

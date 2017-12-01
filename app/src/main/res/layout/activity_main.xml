@@ -24,13 +24,13 @@
         android:layout_marginBottom="3dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <CheckBox
             android:id="@+id/switch_input_mode"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="@drawable/switch_input_icon"
             android:button="@null"
             android:checked="true"/>
@@ -38,17 +38,19 @@
         <EditText
             android:id="@+id/text_input"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="38dp"
             android:layout_weight="1"
-            android:padding="10dp"
-            android:background="@mipmap/voice_press_false"/>
+            android:padding="3dp"
+            android:layout_marginLeft="12dp"
+            android:background="@drawable/button"/>
 
         <Button
             android:id="@+id/voice_input"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="38dp"
             android:layout_weight="1"
-            android:background="@drawable/voice_btn_bg"
+            android:layout_marginLeft="12dp"
+            android:background="@drawable/button"
             android:gravity="center"
             android:visibility="gone"
             android:text="按住说话"/>

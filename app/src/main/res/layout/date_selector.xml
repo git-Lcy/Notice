@@ -3,14 +3,24 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="right"
+    android:gravity="center_horizontal|bottom"
+    android:layout_gravity="bottom|center_horizontal"
+    android:layout_marginBottom="50dp"
+    android:background="@color/transparent"
     android:orientation="vertical">
 
     <CalendarView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/calendar_selector"
-        android:layout_marginTop="?attr/actionBarSize">
-
+        android:id="@+id/calendar_view"
+        android:background="@color/transparent">
     </CalendarView>
+
+    <TextView
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        android:id="@+id/calendar_query"
+        android:gravity="center"
+        android:text="    取消    |    确定    "
+        android:background="@drawable/button" />
 </LinearLayout>
