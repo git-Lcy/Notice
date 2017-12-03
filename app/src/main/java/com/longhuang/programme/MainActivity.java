@@ -1,10 +1,15 @@
 package com.longhuang.programme;
 
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,7 +26,9 @@ import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.iflytek.cloud.ErrorCode;
@@ -42,6 +49,7 @@ import org.litepal.parser.LitePalContentHandler;
 import org.litepal.tablemanager.Connector;
 import org.litepal.util.Const;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,16 +58,17 @@ import java.util.List;
 
 public class MainActivity extends BaseActivity  {
 
+    private LinearLayout mainSkin;
     private RecyclerView recyclerView;
     private CheckBox switchInput;
     private EditText textInput;
     private Button voiceInput;
     private Button sendMessage;
-
-    private Dialog calendarDialog;
-    private CalendarView calendarView;
+    private CheckBox calendar;
+    private CalendarView mDatePicker;
     private ProgrammeAdapter adapter;
     private MyHandler handle;
+    private String path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,35 +78,60 @@ public class MainActivity extends BaseActivity  {
         Toolbar toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
 
+        path = getFilesDir().getPath()+"/skin.png";
         initView();
         initEvent();
 
+        L.e("Main"," ---------------- getFilesDir() = "+getFilesDir().getPath());
+        L.e("Main"," ---------------- getFilesDir().getAbsolutePath() = "+getFilesDir().getAbsolutePath());
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.toolbar,menu);
+
         return true;
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.skin:
-
-                break;
-            case R.id.calendar:
-                boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                if (checked){
-                    calendarDialogShow();
-                }else {
-                    adapter.showAllProgramme();
-                }
+                final Dialog mDialog = new AppCompatDialog(this);
+                mDialog.show();
+                mDialog.setContentView(R.layout.image_select_dialog);
+                TextView camera = mDialog.findViewById(R.id.image_camera);
+                TextView select = mDialog.findViewById(R.id.image_select);
+                final TextView cancel = mDialog.findViewById(R.id.image_cancel);
+                camera.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent takeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        //下面这句指定调用相机拍照后的照片存储的路径
+                        takeIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.parse(path));
+                        startActivityForResult(takeIntent, Global.CAMERA_REQUEST_CODE);
+                    }
+                });
+                select.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent albumIntent = new Intent(Intent.ACTION_PICK,null);
+                        Intent pickIntent = new Intent(Intent.ACTION_PICK, null);
+                        // 如果限制上传到服务器的图片类型时可以直接写如："image/jpeg 、 image/png等的类型"
+                        pickIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+                        startActivityForResult(pickIntent, Global.ALBUM_REQUEST_CODE);
+                    }
+                });
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                    }
+                });
                 break;
             case R.id.add:
                 if (adapter == null) break;
                 if (Global.programmeCache.size() > 1) break;
                 Intent intent = new Intent(this,ProgrammeMenuActivity.class);
-                startActivityForResult(intent,111);
+                startActivityForResult(intent,Global.CONFIG_REQUEST_CODE);
                 break;
             case R.id.delete:
                 if (adapter == null) break;
@@ -107,18 +141,44 @@ public class MainActivity extends BaseActivity  {
         return true;
     }
     private void initView(){
+        mainSkin = findViewById(R.id.main_skin);
         recyclerView = (RecyclerView) findViewById(R.id.programme_list);
         switchInput = (CheckBox)findViewById(R.id.switch_input_mode);
         textInput = (EditText)findViewById(R.id.text_input);
         voiceInput = (Button) findViewById(R.id.voice_input);
         sendMessage = (Button) findViewById(R.id.send_message);
-
+        mDatePicker = findViewById(R.id.date_picker);
+        calendar = findViewById(R.id.calendar);
+        mDatePicker.setVisibility(View.GONE);
     }
     private void initEvent(){
         handle = new MyHandler(this);
         adapter = new ProgrammeAdapter(MainActivity.this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        mDatePicker.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+                final StringBuilder dateBuilder = new StringBuilder();
+                month++;
+                dateBuilder.append(year).append("-");
+                if (month<10) dateBuilder.append(0);
+                dateBuilder.append(month).append("-");
+                if (dayOfMonth<10) dateBuilder.append(0);
+                dateBuilder.append(dayOfMonth);
+                L.e("Main","------- OnSelectedDayChange  date = "+dateBuilder.toString());
+                ThreadPoolManager.getInstance().addTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Programme> list = DataSupport.where("date = ?",dateBuilder.toString()).find(Programme.class);
+                        if (list==null) list = new ArrayList<>();
+                        Collections.reverse(list);
+                        adapter.setProgrammeSelectedDate(list);
+                        handle.sendEmptyMessage(0);
+                    }
+                });
+            }
+        });
         switchInput.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -147,6 +207,17 @@ public class MainActivity extends BaseActivity  {
             }
         });
 
+        calendar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (calendar.isChecked()){
+                    mDatePicker.setVisibility(View.VISIBLE);
+                }else {
+                    mDatePicker.setVisibility(View.GONE);
+                    adapter.showAllProgramme();
+                }
+            }
+        });
 
         voiceInput.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -190,68 +261,28 @@ public class MainActivity extends BaseActivity  {
             }
         });
     }
-    private void calendarDialogShow(){
-        if (calendarDialog == null) {
-            calendarDialog = new Dialog(this);
-            calendarDialog.show();
-            calendarDialog.setContentView(R.layout.date_selector);
-            calendarView = calendarDialog.findViewById(R.id.calendar_view);
-            TextView textView = calendarDialog.findViewById(R.id.calendar_query);
-            textView.setOnTouchListener(new MyTouchListener());
-            calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-                @Override
-                public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                    final StringBuilder dateBuilder = new StringBuilder();
-                    dateBuilder.append(year).append("-");
-                    if (month<10) dateBuilder.append(0);
-                    dateBuilder.append(month).append("-");
-                    if (dayOfMonth<10) dateBuilder.append(0);
-                    dateBuilder.append(dayOfMonth);
-                    ThreadPoolManager.getInstance().addTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            List<Programme>  list = DataSupport.where("date = ?",dateBuilder.toString()).find(Programme.class);
-                            if (list==null) list = new ArrayList<>();
-                            Collections.reverse(list);
-                            adapter.setProgrammeSelectedDate(list);
-                            handle.sendEmptyMessage(0);
-                        }
-                    });
-                }
-            });
 
-        }
-        if (!calendarDialog.isShowing()) {
-            calendarDialog.show();
+    @Override
+    public void onActivityResult(int requestCode,int resultCode,Intent date){
+        super.onActivityResult(requestCode,resultCode,date);
+        switch (requestCode){
+            case Global.CONFIG_REQUEST_CODE:
+
+                break;
+            case Global.CAMERA_REQUEST_CODE:
+                Drawable d = Drawable.createFromPath(path);
+                if (d==null) break;
+                mainSkin.setBackground(d);
+                break;
+            case Global.ALBUM_REQUEST_CODE:
+                Uri uri = date.getData();
+                Drawable dra = Drawable.createFromPath(uri.getPath());
+                if (dra==null) break;
+                mainSkin.setBackground(dra);
+                break;
         }
     }
-    class MyTouchListener implements View.OnTouchListener {
-        private int oldX;
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            L.e("MainActivity","TextView  onTouch()");
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    oldX = (int) event.getX();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    int position = (int) event.getX();
-                    int flg = position - oldX;
-                    if (flg < -18 || flg > 18) return true;
-                    if (calendarDialog != null && calendarDialog.isShowing()) {
-                        calendarDialog.dismiss();
-                    }
-                    int width = v.getWidth() / 2;
-                    if (position < width) {
-                        MenuItem calendarItem = getSupportActionBar().getCustomView().findViewById(R.id.calendar);
 
-                        calendarItem.setChecked(false);
-                        adapter.showAllProgramme();
-                    }
-            }
-            return true;
-        }
-    }
     static class MyHandler extends Handler  {
         public static final int MEG_START_LISTENING = 1;
         public static final int MSG_STOP_LISTENING = 2;

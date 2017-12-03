@@ -3,8 +3,12 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#ff4081</color>
+    <color name="colorRed">#9bff4081</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name ="textGary">#515151</color>
     <color name ="colorGary">#9c9c9c</color>
     <color name ="colorGreen">#d403b600</color>
+    <color name ="colorGreen_i">#73001eb6</color>
     <color name ="colorBlack">#231d1d</color>
     <color name ="colorItemBg">#7a4d5db6</color>
     <color name ="transparent">#00000000</color>

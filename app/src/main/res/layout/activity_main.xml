@@ -10,17 +10,38 @@
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
     </android.support.v7.widget.Toolbar>
-    <android.support.v7.widget.RecyclerView
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tool_bar"
-        android:id="@+id/programme_list">
-    </android.support.v7.widget.RecyclerView>
+        android:layout_height="match_parent"
+        android:layout_below="@id/tool_bar"
+        android:orientation="vertical"
+        android:id="@+id/main_skin"
+        android:layout_above="@+id/about">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/programme_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+        </android.support.v7.widget.RecyclerView>
+        <CalendarView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/date_picker"
+
+            android:headerBackground="@color/transparent"
+            android:background="@color/transparent"
+            android:layout_gravity="center_horizontal">
+
+        </CalendarView>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:id="@+id/about"
         android:layout_marginBottom="3dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
@@ -40,6 +61,7 @@
             android:layout_width="0dp"
             android:layout_height="38dp"
             android:layout_weight="1"
+            android:maxLines="1"
             android:padding="3dp"
             android:layout_marginLeft="12dp"
             android:background="@drawable/button"/>
@@ -61,5 +83,11 @@
             android:layout_height="50dp"
             android:background="@drawable/send_message_icon"
             android:enabled="false"/>
+        <CheckBox
+            android:id="@+id/calendar"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:button="@null"
+            android:background="@drawable/calendar_selector"/>
     </LinearLayout>
 </RelativeLayout>

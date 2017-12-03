@@ -8,11 +8,6 @@
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/calendar"
-        android:icon="@drawable/calendar_selector"
-        android:title="日期"
-        app:showAsAction="always"/>
-    <item
         android:id="@+id/delete"
         android:icon="@mipmap/delete"
         android:title="删除"

@@ -1,5 +1,7 @@
 package com.longhuang.programme.utils;
 
+import android.net.Uri;
+
 import com.longhuang.programme.module.Programme;
 
 import org.litepal.crud.DataSupport;
@@ -15,9 +17,13 @@ import java.util.List;
  */
 
 public class Global {
+    public static final int CONFIG_REQUEST_CODE = 1;
+    public static final int CAMERA_REQUEST_CODE = 2;
+    public static final int ALBUM_REQUEST_CODE = 3;
+
     public static boolean VOICE_ENABLE;
     public static  List<Programme> programmeList=new ArrayList<>();
-    public static  List<Programme> programmeCache;
+    public static  List<Programme> programmeCache=new ArrayList<>();
     public static Programme saveProgramme(String message){
         Programme programme = new Programme();
         programme.setMessage(message);
@@ -45,4 +51,17 @@ public class Global {
         Collections.reverse(programmeList);
         return programmeList;
     }
+    /**
+     * 裁剪图片方法实现
+     *
+     * @param uri
+     */
+ /*   public void startCropActivity(Uri uri) {
+        UCrop.of(uri, mDestinationUri)
+                .withAspectRatio(1, 1)
+                .withMaxResultSize(512, 512)
+                .withTargetActivity(CropActivity.class)
+                .start(mActivity, this);
+    }
+    */
 }

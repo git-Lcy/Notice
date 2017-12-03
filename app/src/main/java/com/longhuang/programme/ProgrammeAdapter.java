@@ -91,7 +91,8 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
                     Global.programmeCache.add(programme);
                 }
                 programme.isSelected = !selected;
-                notifyItemChanged(position);
+                notifyItemChanged(programmeList.indexOf(programme));
+
 
             }
         });
@@ -155,6 +156,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         notifyItemInserted(0);
     }
     public void deleteSelected(){
+        if (Global.programmeCache.size()==0) return;
         for (Programme programme : Global.programmeCache){
             programme.isSelected = false;
             programme.delete();
