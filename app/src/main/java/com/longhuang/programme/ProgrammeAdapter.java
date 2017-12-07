@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.longhuang.programme.module.ExtraProgramme;
 import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
 import com.longhuang.programme.utils.ProgrammeComparator;
@@ -30,8 +31,8 @@ import java.util.Set;
 
 public class ProgrammeAdapter extends RecyclerView.Adapter {
 
-    private List<Programme> programmeList ;
-    private List<Programme> programmeSelectedDate ;
+    private List<ExtraProgramme> programmeList ;
+    private List<ExtraProgramme> programmeSelectedDate ;
     private LayoutInflater inflater;
     private Context context;
     private boolean isCalendarData;
@@ -42,7 +43,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         programmeList = Global.programmeList;
     }
 
-    public void setProgrammeSelectedDate(List<Programme> programmes){
+    public void setProgrammeSelectedDate(List<ExtraProgramme> programmes){
         if (programmeSelectedDate==null) programmeSelectedDate = new ArrayList<>();
         if (programmeSelectedDate.size()>0) programmeSelectedDate.clear();
         programmeSelectedDate.addAll(programmes);
@@ -63,7 +64,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-        final Programme programme = isCalendarData ? programmeSelectedDate.get(position) : programmeList.get(position);
+        final ExtraProgramme programme = isCalendarData ? programmeSelectedDate.get(position) : programmeList.get(position);
         final ProgrammeHolder programmeHolder = (ProgrammeHolder)holder;
         programmeHolder.messageInfo.setText(programme.getMessage());
         String time = programme.getTimeInfo();
@@ -83,14 +84,13 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         programmeHolder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Global.programmeCache==null)  Global.programmeCache = new ArrayList<>();
                 boolean selected = programme.isSelected;
                 if (selected){
                     Global.programmeCache.remove(programme);
                 }else {
                     Global.programmeCache.add(programme);
                 }
-                programme.isSelected = !selected;
+                programme.isSelected = !selected ;
                 notifyItemChanged(programmeList.indexOf(programme));
 
 
@@ -100,10 +100,14 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
            @Override
            public boolean onTouch(View v, MotionEvent event) {
                if (event.getAction() == MotionEvent.ACTION_UP) {
+
                    boolean isRinging = !programmeHolder.ringing.isChecked();
                    programmeHolder.ringing.setChecked(isRinging);
-                   programme.setVibrate(isRinging);
-                   programme.save();
+                   programme.setRinging(isRinging);
+
+                   Programme p = Global.getChangeItem(programme);
+                   p.setRinging(isRinging);
+                   p.save();
                    return true;
                }
                return false;
@@ -114,9 +118,11 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP){
                     boolean isVibrate = !programmeHolder.vibrate.isChecked();
+                    Programme p = Global.getChangeItem(programme);
                     programmeHolder.vibrate.setChecked(isVibrate);
                     programme.setVibrate(isVibrate);
-                    programme.save();
+                    p.setVibrate(isVibrate);
+                    p.save();
                     return true;
                 }
                 return false;
@@ -150,14 +156,14 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public void insertProgramme(Programme programme){
+    public void insertProgramme(ExtraProgramme programme){
         if (isCalendarData)programmeSelectedDate.add(0, programme);
         programmeList.add(0,programme);
         notifyItemInserted(0);
     }
     public void deleteSelected(){
         if (Global.programmeCache.size()==0) return;
-        for (Programme programme : Global.programmeCache){
+        for (ExtraProgramme programme : Global.programmeCache){
             programme.isSelected = false;
             programme.delete();
             programmeList.remove(programme);
@@ -166,13 +172,13 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
-    public void add(Programme programme){
+    public void add(ExtraProgramme programme){
         if (Global.programmeCache.size()==0){
             programmeList.add(0,programme);
             notifyItemInserted(0);
             return;
         }
-        Programme editProgramme = Global.programmeCache.get(0);
+        ExtraProgramme editProgramme = Global.programmeCache.get(0);
         editProgramme.setDescription(programme.getDescription());
         editProgramme.setMessage(programme.getMessage());
         editProgramme.setRinging(programme.isRinging());

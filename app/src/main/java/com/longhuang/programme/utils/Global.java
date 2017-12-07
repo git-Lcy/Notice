@@ -1,7 +1,9 @@
 package com.longhuang.programme.utils;
 
 import android.net.Uri;
+import android.text.TextUtils;
 
+import com.longhuang.programme.module.ExtraProgramme;
 import com.longhuang.programme.module.Programme;
 
 import org.litepal.crud.DataSupport;
@@ -22,14 +24,15 @@ public class Global {
     public static final int ALBUM_REQUEST_CODE = 3;
 
     public static boolean VOICE_ENABLE;
-    public static  List<Programme> programmeList=new ArrayList<>();
-    public static  List<Programme> programmeCache=new ArrayList<>();
-    public static Programme saveProgramme(String message){
+    private static  List<Programme> programmes=new ArrayList<>();
+    public static  List<ExtraProgramme> programmeList=new ArrayList<>();
+    public static  List<ExtraProgramme> programmeCache=new ArrayList<>();
+    public static ExtraProgramme saveProgramme(String message){
         Programme programme = new Programme();
         programme.setMessage(message);
         saveProgramme(programme);
         programme.save();
-        return programme;
+        return new ExtraProgramme(programme);
     }
     public static void saveProgramme(Programme p){
         long currentTime = System.currentTimeMillis();
@@ -39,17 +42,33 @@ public class Global {
         p.setDate(format.format(date));
     }
     public static void findAll(){
-        List<Programme> list  = DataSupport.findAll(Programme.class);
-        if (list==null || list.size()==0) return;
-        Collections.reverse(list);
+         programmes = DataSupport.findAll(Programme.class);
+        if (programmes==null || programmes.size()==0) return;
+        Collections.reverse(programmes);
         if (programmeList.size()>0) programmeList.clear();
-        programmeList.addAll(list);
+        for (Programme p : programmes){
+            programmeList.add(new ExtraProgramme(p));
+        }
+
     }
-    public static List<Programme> findSelectedDateProgramme(String date){
+    public static Programme getChangeItem(ExtraProgramme extra){
+        String id = extra.getProgrammeId();
+        for (Programme p : programmes){
+            if (TextUtils.equals(id,p.getProgrammeId())){
+                return p;
+            }
+        }
+        return new Programme(extra);
+    }
+    public static List<ExtraProgramme> findSelectedDateProgramme(String date){
         List<Programme> programmeList = DataSupport.where("date",date).find(Programme.class);
         if (programmeList==null) programmeList = new ArrayList<>();
         Collections.reverse(programmeList);
-        return programmeList;
+        List<ExtraProgramme> p = new ArrayList<>();
+        for (Programme programme : programmeList){
+            p.add(new ExtraProgramme(programme));
+        }
+        return p;
     }
     /**
      * 裁剪图片方法实现

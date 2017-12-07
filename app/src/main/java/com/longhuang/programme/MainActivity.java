@@ -1,8 +1,12 @@
 package com.longhuang.programme;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
@@ -17,10 +21,12 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CalendarView;
@@ -39,6 +45,7 @@ import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechSynthesizer;
 import com.longhuang.programme.Imp.MyRecognizerListener;
 import com.longhuang.programme.Imp.MySynthesizerListener;
+import com.longhuang.programme.module.ExtraProgramme;
 import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
 import com.longhuang.programme.utils.L;
@@ -95,9 +102,12 @@ public class MainActivity extends BaseActivity  {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.skin:
-                final Dialog mDialog = new AppCompatDialog(this);
+                final AlertDialog mDialog = new AlertDialog.Builder(this).create();
                 mDialog.show();
                 mDialog.setContentView(R.layout.image_select_dialog);
+                Window w = mDialog.getWindow();
+                w.setBackgroundDrawableResource(android.R.color.transparent);
+                w.setGravity(Gravity.BOTTOM);
                 TextView camera = mDialog.findViewById(R.id.image_camera);
                 TextView select = mDialog.findViewById(R.id.image_select);
                 final TextView cancel = mDialog.findViewById(R.id.image_cancel);
@@ -173,7 +183,11 @@ public class MainActivity extends BaseActivity  {
                         List<Programme> list = DataSupport.where("date = ?",dateBuilder.toString()).find(Programme.class);
                         if (list==null) list = new ArrayList<>();
                         Collections.reverse(list);
-                        adapter.setProgrammeSelectedDate(list);
+                        List<ExtraProgramme> extra = new ArrayList<>();
+                        for (Programme p : list){
+                            extra.add(new ExtraProgramme(p));
+                        }
+                        adapter.setProgrammeSelectedDate(extra);
                         handle.sendEmptyMessage(0);
                     }
                 });
@@ -243,7 +257,7 @@ public class MainActivity extends BaseActivity  {
             public void onClick(View v) {
                 String message = textInput.getText().toString();
                 textInput.setText("");
-                Programme programme = Global.saveProgramme(message);
+                ExtraProgramme programme = Global.saveProgramme(message);
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 if (imm !=null ){
                     imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
@@ -270,9 +284,12 @@ public class MainActivity extends BaseActivity  {
 
                 break;
             case Global.CAMERA_REQUEST_CODE:
-                Drawable d = Drawable.createFromPath(path);
-                if (d==null) break;
-                mainSkin.setBackground(d);
+
+                
+                Drawable drawable = BitmapDrawable.createFromPath(path);
+                if (drawable==null) break;
+
+                mainSkin.setBackground(drawable);
                 break;
             case Global.ALBUM_REQUEST_CODE:
                 Uri uri = date.getData();
@@ -345,7 +362,7 @@ public class MainActivity extends BaseActivity  {
                         weakReference.get().voiceInput.setPressed(false);
                     }
                     String resultInfo = (String)msg.obj;
-                    Programme programme = Global.saveProgramme(resultInfo);
+                    ExtraProgramme programme = Global.saveProgramme(resultInfo);
                     weakReference.get().adapter.insertProgramme(programme);
                     break;
                 case MyRecognizerListener.MSG_PARSE_ERR:

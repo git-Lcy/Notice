@@ -12,7 +12,6 @@ import java.util.Comparator;
 
 public class Programme extends DataSupport {
 
-    public boolean isSelected;
 
     private boolean isExecuted; //是否已经执行
 
@@ -33,6 +32,22 @@ public class Programme extends DataSupport {
     private String time;//时间 13:18:05
 
     private String programmeId;//唯一标识 时间戳
+
+    private String ringingUrl;
+
+    public Programme(Programme p){
+        isExecuted = p.isExecuted;
+        repeatType = p.repeatType;
+        message = p.message;
+        description = p.description;
+        isVibrate = p.isVibrate;
+        isRinging = p.isRinging;
+        ringingPath = p.ringingPath;
+        date = p.date;
+        time = p.time;
+        programmeId = p.programmeId;
+        ringingUrl = p.ringingUrl;
+    }
 
     public void setRepeatType(int repeatType) {
         this.repeatType = repeatType;
@@ -125,7 +140,7 @@ public class Programme extends DataSupport {
         return ringingUrl;
     }
 
-    private String ringingUrl;
+
 
     public Programme(){
     }
