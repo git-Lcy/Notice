@@ -64,10 +64,16 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-        final ExtraProgramme programme = isCalendarData ? programmeSelectedDate.get(position) : programmeList.get(position);
+        final ExtraProgramme extra = isCalendarData ? programmeSelectedDate.get(position) : programmeList.get(position);
+        final Programme programme = extra.getProgramme();
         final ProgrammeHolder programmeHolder = (ProgrammeHolder)holder;
+
         programmeHolder.messageInfo.setText(programme.getMessage());
-        String time = programme.getTimeInfo();
+
+        programmeHolder.timeInfo.setTextColor(context.getResources()
+                .getColor(programme.isExecuted() ? R.color.colorGary : R.color.colorGreen));
+
+        String time = programme.getExecuteTime();
         if (TextUtils.isEmpty(time)){
             programmeHolder.timeInfo.setVisibility(View.GONE);
         }else {
@@ -78,20 +84,20 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         programmeHolder.ringing.setChecked(programme.isRinging());
         programmeHolder.vibrate.setChecked(programme.isVibrate());
 
-        programmeHolder.layout.setBackgroundColor(
-                    context.getResources().getColor(programme.isSelected ? R.color.colorItemBg : R.color.transparent));
+        programmeHolder.layout.setBackgroundColor(context.getResources()
+                        .getColor(extra.isSelected ? R.color.colorItemBg : R.color.transparent));
 
         programmeHolder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean selected = programme.isSelected;
+                boolean selected = extra.isSelected;
                 if (selected){
-                    Global.programmeCache.remove(programme);
+                    Global.programmeCache.remove(extra);
                 }else {
-                    Global.programmeCache.add(programme);
+                    Global.programmeCache.add(extra);
                 }
-                programme.isSelected = !selected ;
-                notifyItemChanged(programmeList.indexOf(programme));
+                extra.isSelected = !selected ;
+                notifyItemChanged(programmeList.indexOf(extra));
 
 
             }
@@ -104,10 +110,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
                    boolean isRinging = !programmeHolder.ringing.isChecked();
                    programmeHolder.ringing.setChecked(isRinging);
                    programme.setRinging(isRinging);
-
-                   Programme p = Global.getChangeItem(programme);
-                   p.setRinging(isRinging);
-                   p.save();
+                   programme.save();
                    return true;
                }
                return false;
@@ -118,11 +121,9 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP){
                     boolean isVibrate = !programmeHolder.vibrate.isChecked();
-                    Programme p = Global.getChangeItem(programme);
                     programmeHolder.vibrate.setChecked(isVibrate);
                     programme.setVibrate(isVibrate);
-                    p.setVibrate(isVibrate);
-                    p.save();
+                    programme.save();
                     return true;
                 }
                 return false;
@@ -140,8 +141,8 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
 
     class ProgrammeHolder extends RecyclerView.ViewHolder{
         private LinearLayout layout;
-        private TextView timeInfo;
-        private TextView messageInfo;
+        private TextView timeInfo;//提醒执行时间
+        private TextView messageInfo;// 提醒信息
         private CheckBox vibrate;//震动
         private CheckBox ringing;//铃声
 
@@ -152,20 +153,21 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             messageInfo = itemView.findViewById(R.id.programme_message);
             vibrate = itemView.findViewById(R.id.programme_switch_vibrate);
             ringing = itemView.findViewById(R.id.programme_switch_ringing);
-
         }
     }
 
+    //添加提醒并刷新
     public void insertProgramme(ExtraProgramme programme){
         if (isCalendarData)programmeSelectedDate.add(0, programme);
         programmeList.add(0,programme);
         notifyItemInserted(0);
     }
+    // 删除选中的提醒
     public void deleteSelected(){
         if (Global.programmeCache.size()==0) return;
         for (ExtraProgramme programme : Global.programmeCache){
             programme.isSelected = false;
-            programme.delete();
+            programme.getProgramme().delete();
             programmeList.remove(programme);
             if (isCalendarData) programmeSelectedDate.remove(programme);
         }
@@ -178,12 +180,6 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             notifyItemInserted(0);
             return;
         }
-        ExtraProgramme editProgramme = Global.programmeCache.get(0);
-        editProgramme.setDescription(programme.getDescription());
-        editProgramme.setMessage(programme.getMessage());
-        editProgramme.setRinging(programme.isRinging());
-        editProgramme.setVibrate(programme.isVibrate());
-        editProgramme.setRingingUrl(programme.getRingingUrl());
-        editProgramme.setTime(programme.getTime());
+
     }
 }

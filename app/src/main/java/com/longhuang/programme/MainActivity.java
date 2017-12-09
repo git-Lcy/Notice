@@ -10,11 +10,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -57,6 +60,10 @@ import org.litepal.tablemanager.Connector;
 import org.litepal.util.Const;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,6 +83,7 @@ public class MainActivity extends BaseActivity  {
     private ProgrammeAdapter adapter;
     private MyHandler handle;
     private String path;
+    private int skinWidth,skinHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,12 +93,11 @@ public class MainActivity extends BaseActivity  {
         Toolbar toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
 
-        path = getFilesDir().getPath()+"/skin.png";
+        path = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath()+"/skin.png";
         initView();
         initEvent();
 
-        L.e("Main"," ---------------- getFilesDir() = "+getFilesDir().getPath());
-        L.e("Main"," ---------------- getFilesDir().getAbsolutePath() = "+getFilesDir().getAbsolutePath());
+        L.e("Main"," ---------------- getExternalFilesDir(PICTURES) = "+path);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
@@ -114,17 +121,32 @@ public class MainActivity extends BaseActivity  {
                 camera.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialog.dismiss();
+                        File outputImage = new File(path);
+                        try{
+                            if (outputImage.exists()) outputImage.delete();
+                            outputImage.createNewFile();
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
+                        Uri imageUri;
+                        if (Build.VERSION.SDK_INT>=24){
+                            imageUri = FileProvider.getUriForFile(MainActivity.this,"com.longhuang.programme.fileprovide",outputImage);
+                        }else {
+                            imageUri = Uri.fromFile(outputImage);
+                        }
+
                         Intent takeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                         //下面这句指定调用相机拍照后的照片存储的路径
-                        takeIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.parse(path));
+                        takeIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                         startActivityForResult(takeIntent, Global.CAMERA_REQUEST_CODE);
                     }
                 });
                 select.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent albumIntent = new Intent(Intent.ACTION_PICK,null);
-                        Intent pickIntent = new Intent(Intent.ACTION_PICK, null);
+                        mDialog.dismiss();
+                        Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT);
                         // 如果限制上传到服务器的图片类型时可以直接写如："image/jpeg 、 image/png等的类型"
                         pickIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
                         startActivityForResult(pickIntent, Global.ALBUM_REQUEST_CODE);
@@ -152,16 +174,21 @@ public class MainActivity extends BaseActivity  {
     }
     private void initView(){
         mainSkin = findViewById(R.id.main_skin);
-        recyclerView = (RecyclerView) findViewById(R.id.programme_list);
-        switchInput = (CheckBox)findViewById(R.id.switch_input_mode);
-        textInput = (EditText)findViewById(R.id.text_input);
-        voiceInput = (Button) findViewById(R.id.voice_input);
-        sendMessage = (Button) findViewById(R.id.send_message);
+
+        recyclerView =  findViewById(R.id.programme_list);
+        switchInput = findViewById(R.id.switch_input_mode);
+        textInput = findViewById(R.id.text_input);
+        voiceInput =  findViewById(R.id.voice_input);
+        sendMessage =  findViewById(R.id.send_message);
         mDatePicker = findViewById(R.id.date_picker);
         calendar = findViewById(R.id.calendar);
         mDatePicker.setVisibility(View.GONE);
     }
     private void initEvent(){
+        skinWidth = mainSkin.getMeasuredWidth();
+        skinHeight = mainSkin.getMeasuredHeight();
+        Drawable drawable = BitmapDrawable.createFromPath(path);
+        if (drawable!=null) mainSkin.setBackground(drawable);
         handle = new MyHandler(this);
         adapter = new ProgrammeAdapter(MainActivity.this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -257,7 +284,7 @@ public class MainActivity extends BaseActivity  {
             public void onClick(View v) {
                 String message = textInput.getText().toString();
                 textInput.setText("");
-                ExtraProgramme programme = Global.saveProgramme(message);
+                ExtraProgramme programme = new ExtraProgramme(Global.saveProgramme(message));
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 if (imm !=null ){
                     imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
@@ -277,24 +304,26 @@ public class MainActivity extends BaseActivity  {
     }
 
     @Override
-    public void onActivityResult(int requestCode,int resultCode,Intent date){
-        super.onActivityResult(requestCode,resultCode,date);
+    public void onActivityResult(int requestCode,int resultCode,Intent data){
+        super.onActivityResult(requestCode,resultCode,data);
+        L.e("main","onActivityResult() resultCode = "+resultCode);
+        if (data!=null) L.e("main","date uri = "+data.getData().getPath());
         switch (requestCode){
             case Global.CONFIG_REQUEST_CODE:
 
                 break;
             case Global.CAMERA_REQUEST_CODE:
-
-                
                 Drawable drawable = BitmapDrawable.createFromPath(path);
                 if (drawable==null) break;
 
                 mainSkin.setBackground(drawable);
                 break;
             case Global.ALBUM_REQUEST_CODE:
-                Uri uri = date.getData();
-                Drawable dra = Drawable.createFromPath(uri.getPath());
+                String imagePath = L.handleImage(this,data);
+                Drawable dra = BitmapDrawable.createFromPath(imagePath);
+
                 if (dra==null) break;
+                corpImage(imagePath);
                 mainSkin.setBackground(dra);
                 break;
         }
@@ -362,7 +391,7 @@ public class MainActivity extends BaseActivity  {
                         weakReference.get().voiceInput.setPressed(false);
                     }
                     String resultInfo = (String)msg.obj;
-                    ExtraProgramme programme = Global.saveProgramme(resultInfo);
+                    ExtraProgramme programme = new ExtraProgramme(Global.saveProgramme(resultInfo));
                     weakReference.get().adapter.insertProgramme(programme);
                     break;
                 case MyRecognizerListener.MSG_PARSE_ERR:
@@ -375,4 +404,31 @@ public class MainActivity extends BaseActivity  {
         }
 
     }
+
+    private void corpImage(final String oldPath){
+        ThreadPoolManager.getInstance().addTask(new Runnable() {
+            @Override
+            public void run() {
+                try {
+
+                    int byteRead = 0;
+                    File oldFile = new File(oldPath);
+                    if (oldFile.exists()) {//文件存在时
+                        InputStream inStream = new FileInputStream(oldPath);//读入原文件
+                        FileOutputStream fs = new FileOutputStream(path);
+                        byte[] buffer = new byte[1024];
+
+                        while ((byteRead = inStream.read(buffer)) != -1) {
+
+                            fs.write(buffer, 0, byteRead);
+                        }
+                        inStream.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
 }

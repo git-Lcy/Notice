@@ -3,7 +3,7 @@ package com.longhuang.programme;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class ProgrammeSettingActivity extends AppCompatActivity {
+public class ProgrammeNoticeShowActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

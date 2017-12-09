@@ -15,7 +15,7 @@ public class Programme extends DataSupport {
 
     private boolean isExecuted; //是否已经执行
 
-    private int repeatType; //重复类型 0：不重复、1：每天、2：每两天。。。
+    private int repeatType; //重复类型 0：不重复、1：每天
 
     private String message;//提醒信息
 
@@ -25,40 +25,23 @@ public class Programme extends DataSupport {
 
     private boolean isRinging;//铃声
 
-    private String ringingPath;//铃声目录
+    private String date;//创建日期 2017-11-08
 
-    private String date;//日期 2017-11-08
-
-    private String time;//时间 13:18:05
+    private String executeTime;//执行时间 2017-11-08 13:18
 
     private String programmeId;//唯一标识 时间戳
 
     private String ringingUrl;
 
-    public Programme(Programme p){
-        isExecuted = p.isExecuted;
-        repeatType = p.repeatType;
-        message = p.message;
-        description = p.description;
-        isVibrate = p.isVibrate;
-        isRinging = p.isRinging;
-        ringingPath = p.ringingPath;
-        date = p.date;
-        time = p.time;
-        programmeId = p.programmeId;
-        ringingUrl = p.ringingUrl;
+    public String getExecuteTime() {
+        return executeTime;
     }
 
+    public void setExecuteTime(String time) {
+        this.executeTime = time;
+    }
     public void setRepeatType(int repeatType) {
         this.repeatType = repeatType;
-    }
-
-    public String getRingingPath() {
-        return ringingPath;
-    }
-
-    public void setRingingPath(String ringingPath) {
-        this.ringingPath = ringingPath;
     }
 
     public boolean isExecuted() {
@@ -72,9 +55,6 @@ public class Programme extends DataSupport {
         return repeatType;
     }
 
-    public void setRepeat(int repeat) {
-        repeatType = repeat;
-    }
     public void setMessage(String message) {
         this.message = message;
     }
@@ -124,14 +104,6 @@ public class Programme extends DataSupport {
         this.programmeId = programmeId;
     }
 
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
     public String getDate() {
         return date;
     }
@@ -141,37 +113,25 @@ public class Programme extends DataSupport {
     }
 
 
-
     public Programme(){
     }
-
-    public String getTimeInfo(){
-        if(TextUtils.isEmpty(time)) return "";
-        String date = "";
-        if (repeatType == 0){
-            date = this.date+" ";
-        }
-        if (repeatType == 1){
-            date = "每天 ";
-        }
-        if (repeatType == 2){
-            date = "每2天 ";
-        }
-        if (repeatType == 3){
-            date = "每3天 ";
-        }
-        if (repeatType == 4){
-            date = "每4天 ";
-        }
-        if (repeatType == 5){
-            date = "每5天 ";
-        }
-        if (repeatType == 6){
-            date = "每6天 ";
-        }
-        if (repeatType == 7){
-            date = "每7天 ";
-        }
-        return date+time;
+    public void setProgrammeInfo(Programme p){
+        repeatType = p.repeatType;
+        message = p.message;
+        description = p.description;
+        isVibrate = p.isVibrate;
+        isRinging = p.isRinging;
+        executeTime = p.executeTime;
+        ringingUrl = p.ringingUrl;
     }
+    public void clear(){
+        repeatType = 0;
+        message = "";
+        description = "";
+        isVibrate = false;
+        isRinging = false;
+        executeTime = "";
+        ringingUrl = "";
+    }
+
 }
