@@ -15,68 +15,133 @@
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
     </android.support.v7.widget.Toolbar>
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <DatePicker
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:datePickerMode="spinner"
-                android:id="@+id/date_picker"
-                android:calendarViewShown="false">
-            </DatePicker>
-            <TimePicker
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/time_picker"
-                android:timePickerMode="spinner">
-
-            </TimePicker>
-        </LinearLayout>
-    </HorizontalScrollView>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
+        android:layout_weight="5"
+        android:layout_marginTop="8dp"
         android:scrollbars="none">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginRight="18dp"
+            android:layout_marginLeft="18dp"
             android:orientation="vertical">
-            <EditText
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="90dp"
+                    android:layout_height="match_parent"
+                    android:gravity="left|center_vertical"
+                    android:text="执行时间"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="20sp"/>
+                <TextView
+                    android:id="@+id/date_time_text"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="30dp"
+                    android:paddingRight="18dp"
+                    android:textColor="@color/colorGary"
+                    android:textSize="16sp"
+                    android:gravity="center_vertical|right"
+                    android:layout_height="match_parent"/>
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:id="@+id/notice_edit"
-                android:labelFor="@+id/notice_info"
-                android:layout_marginTop="5dp"/>
-            <TextView
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="90dp"
+                    android:layout_height="50dp"
+                    android:gravity="left|center_vertical"
+                    android:text="提醒信息"
+                    android:layout_gravity="center_vertical"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="20sp"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:paddingRight="18dp"
+                    android:textSize="16sp"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical|right"
+                    android:text="提醒"
+                    android:textColor="@color/colorGary"
+                    android:background="@color/transparent"
+                    android:id="@+id/notice_edit"/>
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:id="@+id/repeat"
-                android:layout_marginTop="5dp">
-            </TextView>
-            <TextView
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="90dp"
+                    android:layout_height="match_parent"
+                    android:gravity="left|center_vertical"
+                    android:text="重复"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="20sp"/>
+                <TextView
+                    android:id="@+id/repeat_text"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="30dp"
+                    android:text="只提醒一次"
+                    android:paddingRight="18dp"
+                    android:textSize="16sp"
+                    android:textColor="@color/colorGary"
+                    android:gravity="center_vertical|right"
+                    android:layout_height="match_parent"/>
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:id="@+id/ringing"
-                android:layout_marginTop="5dp">
-            </TextView>
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="90dp"
+                    android:layout_height="match_parent"
+                    android:gravity="left|center_vertical"
+                    android:text="铃声"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="20sp"/>
+                <TextView
+                    android:id="@+id/ringing_text"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="30dp"
+                    android:text="无"
+                    android:paddingRight="18dp"
+                    android:textSize="16sp"
+                    android:textColor="@color/colorGary"
+                    android:gravity="center_vertical|right"
+                    android:layout_height="match_parent"/>
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:textSize="20sp"
-        android:textColor="@color/colorRed"
-        android:text="删除提醒"
-        android:id="@+id/delete_notice"/>
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginLeft="35dp"
+            android:layout_marginRight="35dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/button"
+            android:gravity="center"
+            android:textSize="22sp"
+            android:textColor="@color/colorRed"
+            android:text="删除提醒"
+            android:id="@+id/delete_notice"/>
+    </LinearLayout>
+
 </LinearLayout>

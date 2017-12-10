@@ -1,9 +1,8 @@
 package com.longhuang.programme;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class ProgrammeNoticeShowActivity extends AppCompatActivity {
+public class ProgrammeNoticeShowActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

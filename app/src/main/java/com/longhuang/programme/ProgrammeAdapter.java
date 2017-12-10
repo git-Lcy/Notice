@@ -10,20 +10,14 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.longhuang.programme.module.ExtraProgramme;
 import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
-import com.longhuang.programme.utils.ProgrammeComparator;
-
-import org.litepal.crud.DataSupport;
-import org.litepal.tablemanager.Connector;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+
 
 /**
  * Created by Administrator on 2017/11/17.

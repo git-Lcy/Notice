@@ -30,6 +30,10 @@ public class Global {
     public static final int CAMERA_REQUEST_CODE = 2;
     public static final int ALBUM_REQUEST_CODE = 3;
 
+    public static final int EDIT_SAVE = 0;
+    public static final int EDIT_CANCEL = 1;
+    public static final int EDIT_DELETE = 2;
+
     public static boolean VOICE_ENABLE;
     private static final Programme programme = new Programme();
     public static  List<ExtraProgramme> programmeList=new ArrayList<>();// 所有提醒列表
@@ -51,13 +55,15 @@ public class Global {
             p = new Programme();
             p.setProgrammeInfo(programme);
             saveProgramme(p);
-
-        }else {
-            p = programmeCache.get(0).getProgramme();
-            p.setProgrammeInfo(programme);
+            p.save();
+            return p;
         }
+
+        p = programmeCache.get(0).getProgramme();
+        p.setProgrammeInfo(programme);
         p.save();
-        return programme;
+
+        return null;
     }
     /**
      * 创建提醒对象 Programme

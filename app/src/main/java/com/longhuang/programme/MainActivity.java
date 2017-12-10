@@ -307,10 +307,17 @@ public class MainActivity extends BaseActivity  {
     public void onActivityResult(int requestCode,int resultCode,Intent data){
         super.onActivityResult(requestCode,resultCode,data);
         L.e("main","onActivityResult() resultCode = "+resultCode);
-        if (data!=null) L.e("main","date uri = "+data.getData().getPath());
         switch (requestCode){
             case Global.CONFIG_REQUEST_CODE:
-
+                if (resultCode==0){
+                    Programme p = Global.setProgrammeInfo();
+                    if (p!=null){
+                        ExtraProgramme extra = new ExtraProgramme(p);
+                        adapter.insertProgramme(extra);
+                    }else {
+                        adapter.notifyDataSetChanged();
+                    }
+                }
                 break;
             case Global.CAMERA_REQUEST_CODE:
                 Drawable drawable = BitmapDrawable.createFromPath(path);
