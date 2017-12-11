@@ -28,7 +28,7 @@
                 android:resource="@xml/file_path" />
         </provider>
 
-        <receiver android:name=".Imp.AlarmBroadcastReceiver">
+        <receiver android:name=".imp.AlarmBroadcastReceiver">
             <intent-filter >
                 <action android:name="com.longhuang.programme.ACTION_ALARM"/>
             </intent-filter>

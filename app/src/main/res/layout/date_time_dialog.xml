@@ -26,5 +26,10 @@
         android:gravity="center"
         android:id="@+id/time_ok"
         android:background="@drawable/button"
-        android:text="@android:string/ok"/>
+        android:text="确定"/>
+    <LinearLayout
+        android:layout_width="50dp"
+        android:layout_height="25dp"
+        android:orientation="horizontal"
+        android:background="@color/transparent"/>
 </LinearLayout>

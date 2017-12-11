@@ -1,14 +1,9 @@
 package com.longhuang.programme;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -18,7 +13,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -35,7 +29,6 @@ import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -46,8 +39,8 @@ import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechSynthesizer;
-import com.longhuang.programme.Imp.MyRecognizerListener;
-import com.longhuang.programme.Imp.MySynthesizerListener;
+import com.longhuang.programme.imp.MyRecognizerListener;
+import com.longhuang.programme.imp.MySynthesizerListener;
 import com.longhuang.programme.module.ExtraProgramme;
 import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
@@ -55,9 +48,7 @@ import com.longhuang.programme.utils.L;
 import com.longhuang.programme.utils.ThreadPoolManager;
 
 import org.litepal.crud.DataSupport;
-import org.litepal.parser.LitePalContentHandler;
 import org.litepal.tablemanager.Connector;
-import org.litepal.util.Const;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -315,7 +306,7 @@ public class MainActivity extends BaseActivity  {
                         ExtraProgramme extra = new ExtraProgramme(p);
                         adapter.insertProgramme(extra);
                     }else {
-                        adapter.notifyDataSetChanged();
+                        adapter.notifyItemChanged(Global.index);
                     }
                 }
                 break;

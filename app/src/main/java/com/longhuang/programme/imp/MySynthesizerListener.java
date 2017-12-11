@@ -1,8 +1,7 @@
-package com.longhuang.programme.Imp;
+package com.longhuang.programme.imp;
 
 
 import android.os.Bundle;
-import android.os.Handler;
 
 import com.iflytek.cloud.SpeechError;
 import com.iflytek.cloud.SynthesizerListener;

@@ -35,6 +35,7 @@ public class Global {
     public static final int EDIT_DELETE = 2;
 
     public static boolean VOICE_ENABLE;
+    public static int index;
     private static final Programme programme = new Programme();
     public static  List<ExtraProgramme> programmeList=new ArrayList<>();// 所有提醒列表
     public static  List<ExtraProgramme> programmeCache=new ArrayList<>();// 被选中提醒列表
@@ -49,6 +50,7 @@ public class Global {
         return programme;
     }
 
+
     public static Programme setProgrammeInfo(){
         Programme p;
         if (programmeCache.size()==0){
@@ -62,7 +64,7 @@ public class Global {
         p = programmeCache.get(0).getProgramme();
         p.setProgrammeInfo(programme);
         p.save();
-
+        index = programmeList.indexOf(programmeCache.get(0));
         return null;
     }
     /**

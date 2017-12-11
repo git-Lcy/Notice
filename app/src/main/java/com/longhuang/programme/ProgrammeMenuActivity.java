@@ -1,16 +1,13 @@
 package com.longhuang.programme;
 
 import android.app.AlarmManager;
-import android.app.Dialog;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,19 +17,20 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.longhuang.programme.Imp.AlarmBroadcastReceiver;
+import com.longhuang.programme.imp.AlarmBroadcastReceiver;
 import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
+import com.longhuang.programme.utils.L;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 
 public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickListener{
 
     private DatePicker mDatePicker;
     private TimePicker mTimePicker;
+    private AlertDialog dialog;
 
     private TextView dateTimeView,repeatView,ringingView;
     private TextView deleteNoticeView;
@@ -67,12 +65,14 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 break;
             case R.id.ok:
                 mProgramme.setMessage(noticeEditView.getText().toString());
-
+                L.e("onOptionsItemSelected","--- executeTimer = " +executeTimer);
+                L.e("onOptionsItemSelected","--- currentTimeMillis = " +System.currentTimeMillis());
                 if (executeTimer-System.currentTimeMillis() > 60*1000){
                     AlarmManager manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
                     PendingIntent pendingIntent = PendingIntent
                             .getBroadcast(this,0,new Intent(AlarmBroadcastReceiver.ALARM_ACTION),0);
                     manager.setExact(AlarmManager.RTC_WAKEUP,executeTimer,pendingIntent);
+                    L.e("BroadcastReceiver","--- manager.setExact");
                 }else {
                     mProgramme.setExecuted(true);
                 }
@@ -111,32 +111,47 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.date_time_text:
-                final Dialog dialog = new Dialog(this);
-                dialog.show();
-                dialog.setContentView(R.layout.date_time_dialog);
-                final DatePicker datePicker = dialog.findViewById(R.id.date_picker);
-                final TimePicker timePicker = dialog.findViewById(R.id.time_picker);
-                Button okBtn = dialog.findViewById(R.id.time_ok);
-                okBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int year = datePicker.getYear();
-                        int month = datePicker.getMonth()+1;
-                        int day = datePicker.getDayOfMonth();
-                        int hour = timePicker.getCurrentHour();
-                        int minute = timePicker.getCurrentMinute();
-                        Date date = new Date(year,month,day);
-                        date.setHours(hour);
-                        date.setMinutes(minute);
-                        executeTimer = date.getTime();
-                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                        String executeTime = format.format(date);
-                        mProgramme.setExecuteTime(executeTime);
-                        dialog.dismiss();
-                    }
-                });
+                if (dialog==null){
+                    dialog = new AlertDialog.Builder(this).create();
+                    dialog.show();
+                    dialog.setContentView(R.layout.date_time_dialog);
+
+                    mDatePicker = dialog.findViewById(R.id.date_picker);
+                    mTimePicker = dialog.findViewById(R.id.time_picker);
+                    Button okBtn = dialog.findViewById(R.id.time_ok);
+                    okBtn.setOnClickListener(this);
+                }else {
+                    dialog.show();
+                }
 
                 break;
+            case R.id.time_ok:
+                int year = mDatePicker.getYear();
+                int month = mDatePicker.getMonth()+1;
+                int day = mDatePicker.getDayOfMonth();
+                int hour = mTimePicker.getCurrentHour();
+                int minute = mTimePicker.getCurrentMinute();
+
+     //           Calendar calendar = Calendar.getInstance();
+                Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+                calendar.set(year,month,day,hour,minute);
+                executeTimer = calendar.getTimeInMillis();
+
+                StringBuilder builder = new StringBuilder();
+                builder.append(year).append("-");
+                if (month<10) builder.append(0);
+                builder.append(month).append("-");
+                if (day<10) builder.append(0);
+                builder.append(day).append(" ");
+                if (hour<10) builder.append(0);
+                builder.append(hour).append(":");
+                if (minute<10) builder.append(0);
+                builder.append(minute);
+                String executeTime = builder.toString();
+
+                mProgramme.setExecuteTime(executeTime);
+                dateTimeView.setText(executeTime);
+                dialog.dismiss();
             case R.id.repeat_text:
                 repeat = repeat==0? 1 : 0;
                 repeatView.setText(repeat==0 ? "只提醒一次" : "每天" );
