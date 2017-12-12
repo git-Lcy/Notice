@@ -43,6 +43,7 @@ public class Global {
     public static Programme getProgrammeInfo(){
         if (programmeCache.size()==0){
             programme.clear();
+            saveProgramme(programme);
 
         }else {
             programme.setProgrammeInfo(programmeCache.get(0).getProgramme());
@@ -56,7 +57,6 @@ public class Global {
         if (programmeCache.size()==0){
             p = new Programme();
             p.setProgrammeInfo(programme);
-            saveProgramme(p);
             p.save();
             return p;
         }
@@ -65,6 +65,7 @@ public class Global {
         p.setProgrammeInfo(programme);
         p.save();
         index = programmeList.indexOf(programmeCache.get(0));
+        clearCache();
         return null;
     }
     /**
@@ -116,6 +117,14 @@ public class Global {
     }
 
 
+    public static boolean clearCache(){
+        if (programmeCache.size()==0) return false;
+        for (ExtraProgramme p : programmeCache){
+            p.isSelected = false;
+        }
+        programmeCache.clear();
+        return true;
+    }
     /**
      * 将设置界面添加的新提醒保存至数据库
      * @param extra 需要保存的提醒

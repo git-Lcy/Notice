@@ -22,7 +22,9 @@ import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
 import com.longhuang.programme.utils.L;
 
+import java.sql.Date;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 
@@ -65,14 +67,16 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 break;
             case R.id.ok:
                 mProgramme.setMessage(noticeEditView.getText().toString());
-                L.e("onOptionsItemSelected","--- executeTimer = " +executeTimer);
-                L.e("onOptionsItemSelected","--- currentTimeMillis = " +System.currentTimeMillis());
+
                 if (executeTimer-System.currentTimeMillis() > 60*1000){
                     AlarmManager manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                    Intent intent = new Intent(ProgrammeMenuActivity.this,AlarmBroadcastReceiver.class);
+                    intent.putExtra("programmeId",mProgramme.getProgrammeId());
+                    intent.putExtra("executeTime",mProgramme.getExecuteTime());
                     PendingIntent pendingIntent = PendingIntent
-                            .getBroadcast(this,0,new Intent(AlarmBroadcastReceiver.ALARM_ACTION),0);
+                            .getBroadcast(this,0,intent,0);
                     manager.setExact(AlarmManager.RTC_WAKEUP,executeTimer,pendingIntent);
-                    L.e("BroadcastReceiver","--- manager.setExact");
+                    L.e("BroadcastReceiver","--- manager.setExact  id = "+mProgramme.getProgrammeId());
                 }else {
                     mProgramme.setExecuted(true);
                 }
@@ -127,13 +131,13 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 break;
             case R.id.time_ok:
                 int year = mDatePicker.getYear();
-                int month = mDatePicker.getMonth()+1;
+                int month = mDatePicker.getMonth();
                 int day = mDatePicker.getDayOfMonth();
                 int hour = mTimePicker.getCurrentHour();
                 int minute = mTimePicker.getCurrentMinute();
 
-     //           Calendar calendar = Calendar.getInstance();
-                Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+                Calendar calendar = Calendar.getInstance(Locale.CHINA);
+
                 calendar.set(year,month,day,hour,minute);
                 executeTimer = calendar.getTimeInMillis();
 
@@ -165,5 +169,11 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 finish();
                 break;
         }
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+
     }
 }
