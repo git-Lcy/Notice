@@ -46,7 +46,10 @@ public class Global {
             saveProgramme(programme);
 
         }else {
-            programme.setProgrammeInfo(programmeCache.get(0).getProgramme());
+            Programme p = programmeCache.get(0).getProgramme();
+            programme.setProgrammeInfo(p);
+            programme.setProgrammeId(p.getProgrammeId());
+            programme.setDate(p.getDate());
         }
         return programme;
     }
@@ -77,7 +80,8 @@ public class Global {
         Programme programme = new Programme();
         programme.setMessage(message);
         saveProgramme(programme);
-        programme.save();
+        boolean result = programme.save();
+        L.e("GLOBAL","---- create programme  save() = "+result);
         return programme;
     }
 
@@ -90,9 +94,12 @@ public class Global {
         Date date = new Date(currentTime);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
  //       SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
-        p.setProgrammeId(String.valueOf(currentTime));
+        String id = String.valueOf(currentTime);
+        String dateF = format.format(date);
+        p.setProgrammeId(id);
         L.e("GLOBAL","---- create programme  id = "+currentTime);
-        p.setDate(format.format(date));
+        L.e("GLOBAL","---- create programme  date = "+dateF);
+        p.setDate(dateF);
     }
 
     /*

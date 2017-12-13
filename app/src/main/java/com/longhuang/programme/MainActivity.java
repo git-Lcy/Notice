@@ -300,7 +300,7 @@ public class MainActivity extends BaseActivity  {
         L.e("main","onActivityResult() resultCode = "+resultCode);
         switch (requestCode){
             case Global.CONFIG_REQUEST_CODE:
-                if (resultCode==0){
+                if (resultCode==Global.EDIT_SAVE){
                     Programme p = Global.setProgrammeInfo();
                     if (p!=null){
                         ExtraProgramme extra = new ExtraProgramme(p);
@@ -308,7 +308,14 @@ public class MainActivity extends BaseActivity  {
                     }else {
                         adapter.notifyItemChanged(Global.index);
                     }
+                    break;
                 }
+                if (resultCode == Global.EDIT_DELETE){
+                    adapter.deleteSelected();
+                    break;
+                }
+                Global.clearCache();
+                adapter.notifyDataSetChanged();
                 break;
             case Global.CAMERA_REQUEST_CODE:
                 Drawable drawable = BitmapDrawable.createFromPath(path);

@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".Application"
@@ -46,6 +47,11 @@
         <activity
             android:name=".ProgrammeMenuActivity"
             android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".ProgrammeNoticeShowActivity"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask">
         </activity>
     </application>
 
