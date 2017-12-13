@@ -135,4 +135,21 @@ public class Programme extends DataSupport {
         programmeId = "";
     }
 
+    @Override
+    public String toString(){
+        StringBuilder builder = new StringBuilder();
+        builder.append("{ ")
+                .append("isExecuted : ").append(isExecuted).append(" , ")
+                .append("repeatType : ").append(repeatType).append(" , ")
+                .append("message : ").append(message==null? "":message).append(" , ")
+                .append("isVibrate : ").append(isVibrate).append(" , ")
+                .append("isRinging : ").append(isRinging).append(" , ")
+                .append("date : ").append(date == null ? "" : date).append(" , ")
+                .append("executeTime : ").append(executeTime==null ? "":executeTime).append(" , ")
+                .append("programmeId : ").append(programmeId==null ? "":programmeId).append(" , ")
+                .append("ringingUrl : ").append(ringingUrl==null ? "":ringingUrl);
+
+        return builder.toString();
+    }
+
 }
