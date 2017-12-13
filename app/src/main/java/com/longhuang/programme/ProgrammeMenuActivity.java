@@ -100,10 +100,11 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
         repeat = mProgramme.getRepeatType();
         repeatView.setText(repeat==0 ? "只提醒一次" : "每天" );
         String info = mProgramme.getMessage();
+        String date = mProgramme.getDate();
         noticeEditView.setText(TextUtils.isEmpty(info) ? "提醒" : info);
         String ringUrl = mProgramme.getRingingUrl();
         ringingView.setText(TextUtils.isEmpty(ringUrl)?"无" : ringUrl);
-
+        dateTimeView.setText(TextUtils.isEmpty(date)?"" : date);
         dateTimeView.setOnClickListener(this);
         repeatView.setOnClickListener(this);
         ringingView.setOnClickListener(this);

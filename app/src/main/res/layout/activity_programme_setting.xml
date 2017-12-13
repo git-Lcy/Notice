@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
     tools:context="com.longhuang.programme.ProgrammeNoticeShowActivity">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
+        android:id="@+id/notice_info"
+        android:textColor="@color/colorGreen"
+        android:textSize="22sp"
+        android:gravity="center"
+        tools:text="jkjkljkl;jkljkljk"
+        android:background="@drawable/button"/>
 
-</android.support.constraint.ConstraintLayout>
+    <ImageButton
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:id="@+id/notice_btn"
+        android:background="@null"
+        android:layout_marginTop="45dp"
+        android:src="@mipmap/ok"/>
+
+</LinearLayout>

@@ -25,6 +25,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
         String id = intent.getStringExtra("programmeId");
         String time = intent.getStringExtra("executeTime");
+        L.e("BroadcastReceiver","--- programmeId = "+id+"  ; time = "+time);
         if (TextUtils.isEmpty(id) || TextUtils.isEmpty(time)) return;
         List<Programme> p = DataSupport.where("programmeId = ?",id,"executeTime = ?",time).find(Programme.class);
         boolean exist = DataSupport.isExist(Programme.class,"programmeId = ? , executeTime = ?",id,time);

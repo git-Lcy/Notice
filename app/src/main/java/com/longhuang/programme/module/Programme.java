@@ -132,6 +132,7 @@ public class Programme extends DataSupport {
         isRinging = false;
         executeTime = "";
         ringingUrl = "";
+        programmeId = "";
     }
 
 }

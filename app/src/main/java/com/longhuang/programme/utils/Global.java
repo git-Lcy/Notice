@@ -81,14 +81,6 @@ public class Global {
         return programme;
     }
 
-    // 查看
-    public static Programme getCacheProgramme(){
-        if (programmeCache.size()==0){
-            return saveProgramme("提醒");
-        }
-        return programmeCache.get(0).getProgramme();
-    }
-
     /**
      * 为新创建的 p 设置日期及唯一
      * @param p 要操作的对象
@@ -99,6 +91,7 @@ public class Global {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
  //       SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
         p.setProgrammeId(String.valueOf(currentTime));
+        L.e("GLOBAL","---- create programme  id = "+currentTime);
         p.setDate(format.format(date));
     }
 
@@ -109,9 +102,11 @@ public class Global {
          List<Programme> programmes = DataSupport.findAll(Programme.class);
         if (programmes==null || programmes.size()==0) return;
         Collections.reverse(programmes);
+
         if (programmeList.size()>0) programmeList.clear();
         for (Programme p : programmes){
             programmeList.add(new ExtraProgramme(p));
+            L.e("Global"," ------ Programme id = "+p.getProgrammeId());
         }
 
     }
