@@ -2,9 +2,17 @@ package com.longhuang.programme.module;
 
 import android.text.TextUtils;
 
+import com.longhuang.programme.utils.Global;
+
 import org.litepal.crud.DataSupport;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Administrator on 2017/11/14.
@@ -12,45 +20,30 @@ import java.util.Comparator;
 
 public class Programme extends DataSupport {
 
+    private int requestCode;//添加闹钟请求码
 
-    private boolean isExecuted; //是否已经执行
+    private String executeTime; //执行时间 long
 
     private int repeatType; //重复类型 0：不重复、1：每天
 
     private String message;//提醒信息
 
-    private String description;//详细说明
-
     private boolean isVibrate;//震动
 
     private boolean isRinging;//铃声
 
-    private String date;//创建日期 2017-11-08
+    private String date;//执行日期 2017-11-08
 
-    private String executeTime;//执行时间 2017-11-08 13:18
+    private String time;//执行时间 13:18
 
     private String programmeId;//唯一标识 时间戳
 
     private String ringingUrl;
 
-    public String getExecuteTime() {
-        return executeTime;
-    }
-
-    public void setExecuteTime(String time) {
-        this.executeTime = time;
-    }
     public void setRepeatType(int repeatType) {
         this.repeatType = repeatType;
     }
 
-    public boolean isExecuted() {
-        return isExecuted;
-    }
-
-    public void setExecuted(boolean executed) {
-        isExecuted = executed;
-    }
     public int getRepeatType() {
         return repeatType;
     }
@@ -59,8 +52,12 @@ public class Programme extends DataSupport {
         this.message = message;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public String getExecuteTime() {
+        return executeTime;
+    }
+
+    public void setExecuteTime(String executeTime) {
+        this.executeTime = executeTime;
     }
 
     public void setVibrate(boolean vibrate) {
@@ -80,12 +77,7 @@ public class Programme extends DataSupport {
     }
 
     public String getMessage() {
-
         return message;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public boolean isVibrate() {
@@ -100,10 +92,6 @@ public class Programme extends DataSupport {
         return programmeId;
     }
 
-    public void setProgrammeId(String programmeId) {
-        this.programmeId = programmeId;
-    }
-
     public String getDate() {
         return date;
     }
@@ -112,43 +100,73 @@ public class Programme extends DataSupport {
         return ringingUrl;
     }
 
+    public int getRequestCode() {
+        return requestCode;
+    }
+
+    public void setRequestCode(int requestCode) {
+        this.requestCode = requestCode;
+    }
 
     public Programme(){
+        programmeId = String.valueOf(System.currentTimeMillis());
+        isRinging = true;
+        isVibrate = true;
+        int i = 0;
+        boolean result;
+        do {
+            result = Global.alarmRequestCodes.contains(i);
+            if (result) i++;
+        }while (result);
+        requestCode = i;
+        Global.alarmRequestCodes.add(i);
+
+        ringingUrl = Global.MUSIC_URL;
     }
+
+    public Programme(String message){
+        this();
+        this.message = message;
+
+    }
+
+
     public void setProgrammeInfo(Programme p){
+        requestCode = p.requestCode;
         repeatType = p.repeatType;
         message = p.message;
-        description = p.description;
-        isVibrate = p.isVibrate;
-        isRinging = p.isRinging;
-        executeTime = p.executeTime;
         ringingUrl = p.ringingUrl;
+        executeTime = p.executeTime;
+        isRinging = p.isRinging;
+        isVibrate = p.isVibrate;
+        date = p.date;
+        time = p.time;
     }
-    public void clear(){
-        repeatType = 0;
-        message = "";
-        description = "";
-        isVibrate = false;
-        isRinging = false;
-        executeTime = "";
-        ringingUrl = "";
-        programmeId = "";
+
+    public String getTime() {
+        return time;
     }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
 
     @Override
     public String toString(){
         StringBuilder builder = new StringBuilder();
         builder.append("{ ")
-                .append("isExecuted : ").append(isExecuted).append(" , ")
+                .append("requestCode : ").append(requestCode).append(" , ")
                 .append("repeatType : ").append(repeatType).append(" , ")
                 .append("message : ").append(message==null? "":message).append(" , ")
                 .append("isVibrate : ").append(isVibrate).append(" , ")
                 .append("isRinging : ").append(isRinging).append(" , ")
                 .append("date : ").append(date == null ? "" : date).append(" , ")
-                .append("executeTime : ").append(executeTime==null ? "":executeTime).append(" , ")
+                .append("time : ").append(time == null ? "" : time).append(" , ")
+                .append("executeTime : ").append(executeTime == null ? "" : executeTime).append(" , ")
                 .append("programmeId : ").append(programmeId==null ? "":programmeId).append(" , ")
-                .append("ringingUrl : ").append(ringingUrl==null ? "":ringingUrl);
-
+                .append("ringingUrl : ").append(ringingUrl==null ? "":ringingUrl)
+        .append(" }");
         return builder.toString();
     }
 

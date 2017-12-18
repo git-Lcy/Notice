@@ -1,6 +1,9 @@
 package com.longhuang.programme;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -11,9 +14,13 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.iflytek.cloud.SpeechSynthesizer;
+import com.longhuang.programme.imp.AlarmBroadcastReceiver;
+import com.longhuang.programme.imp.MySynthesizerListener;
 import com.longhuang.programme.module.ExtraProgramme;
 import com.longhuang.programme.module.Programme;
 import com.longhuang.programme.utils.Global;
+import com.longhuang.programme.utils.ThreadPoolManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +53,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
     public void showAllProgramme(){
         if (!isCalendarData) return;
         isCalendarData = false;
+        Global.clearCache();
         notifyDataSetChanged();
     }
     @Override
@@ -64,15 +72,20 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
 
         programmeHolder.messageInfo.setText(programme.getMessage());
 
-        programmeHolder.timeInfo.setTextColor(context.getResources()
-                .getColor(programme.isExecuted() ? R.color.colorGary : R.color.colorGreen));
+        String time = programme.getTime();
+        String date = programme.getDate();
 
-        String time = programme.getExecuteTime();
-        if (TextUtils.isEmpty(time)){
+        if (TextUtils.isEmpty(date)){
             programmeHolder.timeInfo.setVisibility(View.GONE);
         }else {
+            if (time==null) {
+                time = "";
+            }else {
+                time = " "+time;
+            }
+
             programmeHolder.timeInfo.setVisibility(View.VISIBLE);
-            programmeHolder.timeInfo.setText(time);
+            programmeHolder.timeInfo.setText(date+time);
         }
 
         programmeHolder.ringing.setChecked(programme.isRinging());
@@ -91,9 +104,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
                     Global.programmeCache.add(extra);
                 }
                 extra.isSelected = !selected ;
-                notifyItemChanged(programmeList.indexOf(extra));
-
-
+                notifyItemChanged(isCalendarData ? programmeSelectedDate.indexOf(extra) : programmeList.indexOf(extra));
             }
         });
         programmeHolder.ringing.setOnTouchListener(new View.OnTouchListener() {
@@ -124,6 +135,26 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             }
         });
 
+        programmeHolder.voice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (SpeechSynthesizer.getSynthesizer() == null) return;
+                SpeechSynthesizer sp = SpeechSynthesizer.getSynthesizer();
+                boolean voice = programmeHolder.voice.isChecked();
+                if (voice){
+                    sp.startSpeaking(programme.getMessage(),new MySynthesizerListener(new MySynthesizerListener.OnSpeakCompleted() {
+                        @Override
+                        public void onCompleted() {
+                            programmeHolder.voice.setChecked(false);
+                        }
+                    }));
+                }else if (sp.isSpeaking()){
+                    sp.stopSpeaking();
+                }
+
+            }
+        });
+
     }
 
     @Override
@@ -139,6 +170,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
         private TextView messageInfo;// 提醒信息
         private CheckBox vibrate;//震动
         private CheckBox ringing;//铃声
+        private CheckBox voice;//语音
 
         public ProgrammeHolder(View itemView) {
             super(itemView);
@@ -147,6 +179,7 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             messageInfo = itemView.findViewById(R.id.programme_message);
             vibrate = itemView.findViewById(R.id.programme_switch_vibrate);
             ringing = itemView.findViewById(R.id.programme_switch_ringing);
+            voice = itemView.findViewById(R.id.programme_play_voice);
         }
     }
 
@@ -160,20 +193,39 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
     public void deleteSelected(){
         if (Global.programmeCache.size()==0) return;
         for (ExtraProgramme programme : Global.programmeCache){
-            programme.isSelected = false;
-            programme.getProgramme().delete();
-            programmeList.remove(programme);
-            if (isCalendarData) programmeSelectedDate.remove(programme);
+            Programme p = programme.getProgramme();
+            p.delete();
+            if (isCalendarData) {
+                programmeSelectedDate.remove(programme);
+                int size = programmeList.size()-1;
+                for (int i = size;i>=0;i--){
+                    if (TextUtils.equals(programmeList.get(i).getProgramme().getProgrammeId(),programme.getProgramme().getProgrammeId())){
+                        programmeList.remove(i);
+                    }
+                }
+            }else {
+                programmeList.remove(programme);
+            }
         }
         notifyDataSetChanged();
+        ThreadPoolManager.getInstance().addTask(new Runnable() {
+            @Override
+            public void run() {
+                AlarmManager manager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
+                Intent intent = new Intent(context,AlarmBroadcastReceiver.class);
+                for (ExtraProgramme programme : Global.programmeCache){
+                    Programme p = programme.getProgramme();
+                    int request = programme.getProgramme().getRequestCode();
+                    intent.putExtra("programmeId",p.getProgrammeId());
+                    intent.putExtra("executeTime",p.getExecuteTime());
+                    PendingIntent pendingIntent = PendingIntent
+                            .getBroadcast(context,request,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    manager.cancel(pendingIntent);
+                }
+                Global.clearCache();
+            }
+        });
     }
 
-    public void add(ExtraProgramme programme){
-        if (Global.programmeCache.size()==0){
-            programmeList.add(0,programme);
-            notifyItemInserted(0);
-            return;
-        }
-
-    }
 }

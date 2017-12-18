@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/skin"
-        android:icon="@mipmap/change_skip"
+        android:icon="@mipmap/setting"
         android:title="换肤"
         app:showAsAction="ifRoom"/>
 
