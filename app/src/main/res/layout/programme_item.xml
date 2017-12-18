@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			  xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
-	android:layout_height="60dp"
+	android:layout_height="wrap_content"
 	android:orientation="horizontal"
 	android:gravity="center_vertical"
 	android:layout_marginTop="5dp"
@@ -10,15 +10,14 @@
 
 	<LinearLayout
 		android:layout_width="0dp"
-		android:layout_height="60dp"
+		android:layout_height="wrap_content"
 		android:layout_weight="1"
 		android:orientation="vertical">
 
 		<TextView
 			android:id="@+id/programme_time"
 			android:layout_width="match_parent"
-			android:layout_height="0dp"
-			android:layout_weight="3"
+			android:layout_height="wrap_content"
 			android:gravity="bottom"
 			android:paddingLeft="5dp"
 			android:textColor="@color/colorGary"
@@ -29,21 +28,19 @@
 		<TextView
 			android:id="@+id/programme_message"
 			android:layout_width="match_parent"
-			android:layout_height="0dp"
-			android:layout_weight="5"
+			android:layout_height="wrap_content"
 			android:gravity="center_vertical"
 			android:paddingLeft="5dp"
-			android:singleLine="true"
 			android:textColor="@color/colorBlack"
 			android:textSize="20sp"
-			tools:text="电源适配器吃饭睡觉打豆豆" />
+			tools:text="电源适打豆豆" />
 	</LinearLayout>
 	<CheckBox
 		android:layout_width="40dp"
 		android:layout_height="40dp"
 		android:id="@+id/programme_play_voice"
 		android:button="@null"
-		android:background="@drawable/switch_ringing_checked"/>
+		android:background="@drawable/switch_voice_checked"/>
 	<CheckBox
 		android:layout_width="40dp"
 		android:layout_height="40dp"
@@ -56,5 +53,8 @@
 		android:id="@+id/programme_switch_vibrate"
 		android:button="@null"
 		android:background="@drawable/switch_vibrate_checked"/>
+	<TextView
+		android:layout_width="1dp"
+		android:layout_height="60dp"/>
 
 	</LinearLayout>

@@ -33,6 +33,18 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="14dp"
+        android:layout_marginLeft="14dp"
+        android:gravity="center"
+        android:id="@+id/ringing_select"
+        android:background="@color/colorGreen"
+        android:textSize="20sp"
+        android:textColor="@color/colorWhite"
+        android:text="选择铃声"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
         android:layout_marginTop="15dp"
         android:layout_marginRight="14dp"
         android:layout_marginLeft="14dp"

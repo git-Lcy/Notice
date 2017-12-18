@@ -37,7 +37,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
         Intent noticeIntent = new Intent(context, ProgrammeNoticeShowActivity.class);
         noticeIntent.putExtra("programmeId",id);
-        noticeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    //    noticeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(noticeIntent);
     }
 }

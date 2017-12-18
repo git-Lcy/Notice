@@ -12,6 +12,12 @@ import com.iflytek.cloud.SynthesizerListener;
 
 public class MySynthesizerListener implements SynthesizerListener {
 
+    private OnSpeakCompleted mOnSpeakCompleted;
+
+    public MySynthesizerListener(){}
+    public MySynthesizerListener(OnSpeakCompleted completed){
+        this.mOnSpeakCompleted = completed;
+    }
     @Override
     public void onSpeakBegin() {}
     @Override
@@ -23,8 +29,14 @@ public class MySynthesizerListener implements SynthesizerListener {
     @Override
     public void onSpeakProgress(int i, int i1, int i2) {}
     @Override
-    public void onCompleted(SpeechError speechError) {}
+    public void onCompleted(SpeechError speechError) {
+        if (mOnSpeakCompleted!=null) mOnSpeakCompleted.onCompleted();
+    }
 
     @Override
     public void onEvent(int i, int i1, int i2, Bundle bundle) {}
+
+    public interface OnSpeakCompleted{
+        void onCompleted();
+    }
 }

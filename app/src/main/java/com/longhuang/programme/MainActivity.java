@@ -1,7 +1,11 @@
 package com.longhuang.programme;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -17,8 +21,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -39,6 +45,7 @@ import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechSynthesizer;
+import com.longhuang.programme.imp.AlarmBroadcastReceiver;
 import com.longhuang.programme.imp.MyRecognizerListener;
 import com.longhuang.programme.imp.MySynthesizerListener;
 import com.longhuang.programme.module.ExtraProgramme;
@@ -56,14 +63,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MainActivity extends BaseActivity  {
 
-    private LinearLayout mainSkin;
+    private LinearLayout mainSkin; // 背景
     private RecyclerView recyclerView;
     private CheckBox switchInput;
     private EditText textInput;
@@ -74,17 +87,22 @@ public class MainActivity extends BaseActivity  {
     private ProgrammeAdapter adapter;
     private MyHandler handle;
     private String path;
-    private int skinWidth,skinHeight;
+
+    private String executeDate;
+    private int selectYear,selectMonth,selectDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 添加toolbar
         Toolbar toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
 
+        //背景图片URL
         path = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath()+"/skin.png";
+
         initView();
         initEvent();
 
@@ -96,10 +114,13 @@ public class MainActivity extends BaseActivity  {
 
         return true;
     }
+    /*
+     * toolbar 里面的item点击监听
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
-            case R.id.skin:
+            case R.id.skin:// 选 图片、铃声
                 final AlertDialog mDialog = new AlertDialog.Builder(this).create();
                 mDialog.show();
                 mDialog.setContentView(R.layout.image_select_dialog);
@@ -108,6 +129,7 @@ public class MainActivity extends BaseActivity  {
                 w.setGravity(Gravity.BOTTOM);
                 TextView camera = mDialog.findViewById(R.id.image_camera);
                 TextView select = mDialog.findViewById(R.id.image_select);
+                TextView music = mDialog.findViewById(R.id.ringing_select);
                 final TextView cancel = mDialog.findViewById(R.id.image_cancel);
                 camera.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -143,6 +165,16 @@ public class MainActivity extends BaseActivity  {
                         startActivityForResult(pickIntent, Global.ALBUM_REQUEST_CODE);
                     }
                 });
+                music.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                        Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT);
+
+                        pickIntent.setDataAndType(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio/*");
+                        startActivityForResult(pickIntent, Global.AUDIO_REQUEST_CODE);
+                    }
+                });
                 cancel.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -157,7 +189,10 @@ public class MainActivity extends BaseActivity  {
                 startActivityForResult(intent,Global.CONFIG_REQUEST_CODE);
                 break;
             case R.id.delete:
-                if (adapter == null) break;
+                if (adapter == null){
+                    Global.clearCache();
+                    break;
+                }
                 adapter.deleteSelected();
                 break;
         }
@@ -176,39 +211,33 @@ public class MainActivity extends BaseActivity  {
         mDatePicker.setVisibility(View.GONE);
     }
     private void initEvent(){
-        skinWidth = mainSkin.getMeasuredWidth();
-        skinHeight = mainSkin.getMeasuredHeight();
+
         Drawable drawable = BitmapDrawable.createFromPath(path);
         if (drawable!=null) mainSkin.setBackground(drawable);
         handle = new MyHandler(this);
         adapter = new ProgrammeAdapter(MainActivity.this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+
         mDatePicker.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
                 final StringBuilder dateBuilder = new StringBuilder();
+                selectDay = dayOfMonth;
+                selectMonth = month;
+                selectYear = year;
+
                 month++;
                 dateBuilder.append(year).append("-");
                 if (month<10) dateBuilder.append(0);
                 dateBuilder.append(month).append("-");
                 if (dayOfMonth<10) dateBuilder.append(0);
                 dateBuilder.append(dayOfMonth);
-                L.e("Main","------- OnSelectedDayChange  date = "+dateBuilder.toString());
-                ThreadPoolManager.getInstance().addTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<Programme> list = DataSupport.where("date = ?",dateBuilder.toString()).find(Programme.class);
-                        if (list==null) list = new ArrayList<>();
-                        Collections.reverse(list);
-                        List<ExtraProgramme> extra = new ArrayList<>();
-                        for (Programme p : list){
-                            extra.add(new ExtraProgramme(p));
-                        }
-                        adapter.setProgrammeSelectedDate(extra);
-                        handle.sendEmptyMessage(0);
-                    }
-                });
+
+                executeDate = dateBuilder.toString();
+
+                L.e("Main","------- OnSelectedDayChange  date = "+executeDate);
+                ThreadPoolManager.getInstance().addTask(showSelectRunnable);
             }
         });
         switchInput.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -224,6 +253,19 @@ public class MainActivity extends BaseActivity  {
             }
         });
 
+        textInput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!calendar.isChecked()) return;
+
+                if (hasFocus) {
+                    mDatePicker.setVisibility(View.GONE);
+                }else {
+                    mDatePicker.setVisibility(View.VISIBLE);
+                }
+
+            }
+        });
         textInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -244,6 +286,10 @@ public class MainActivity extends BaseActivity  {
             public void onClick(View v) {
                 if (calendar.isChecked()){
                     mDatePicker.setVisibility(View.VISIBLE);
+                    if (selectYear==0){
+                        setDate();
+                    }
+                    ThreadPoolManager.getInstance().addTask(showSelectRunnable);
                 }else {
                     mDatePicker.setVisibility(View.GONE);
                     adapter.showAllProgramme();
@@ -275,7 +321,9 @@ public class MainActivity extends BaseActivity  {
             public void onClick(View v) {
                 String message = textInput.getText().toString();
                 textInput.setText("");
-                ExtraProgramme programme = new ExtraProgramme(Global.saveProgramme(message));
+                Programme p = setTimer(message);
+                textInput.clearFocus();
+                ExtraProgramme programme = new ExtraProgramme(p);
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 if (imm !=null ){
                     imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
@@ -301,21 +349,22 @@ public class MainActivity extends BaseActivity  {
         switch (requestCode){
             case Global.CONFIG_REQUEST_CODE:
                 if (resultCode==Global.EDIT_SAVE){
-                    Programme p = Global.setProgrammeInfo();
-                    if (p!=null){
+                    Programme p = Global.getEditProgramme();
+                    ThreadPoolManager.getInstance().addTask(new SetTimerRunnable(p));
+                    if (Global.clearCache()){
+                        adapter.notifyItemChanged(Global.index);
+                    }else {
                         ExtraProgramme extra = new ExtraProgramme(p);
                         adapter.insertProgramme(extra);
-                    }else {
-                        adapter.notifyItemChanged(Global.index);
                     }
+                    p.save();
                     break;
                 }
                 if (resultCode == Global.EDIT_DELETE){
                     adapter.deleteSelected();
                     break;
                 }
-                Global.clearCache();
-                adapter.notifyDataSetChanged();
+                if (Global.clearCache()) adapter.notifyDataSetChanged();
                 break;
             case Global.CAMERA_REQUEST_CODE:
                 Drawable drawable = BitmapDrawable.createFromPath(path);
@@ -331,6 +380,127 @@ public class MainActivity extends BaseActivity  {
                 corpImage(imagePath);
                 mainSkin.setBackground(dra);
                 break;
+            case Global.AUDIO_REQUEST_CODE:
+                String musicPath = L.handleImage(this,data);
+                if (TextUtils.isEmpty(musicPath)) break;
+                SharedPreferences preferences = getSharedPreferences(Global.MUSIC_URL_NAME,Context.MODE_PRIVATE);
+
+                preferences.edit().putString(Global.MUSIC_URL_NAME,musicPath);
+                Global.MUSIC_URL = musicPath;
+        }
+    }
+
+    private Programme setTimer(String message){
+        final Programme p = new Programme(message);
+
+        final String execute;
+        final Calendar c = Calendar.getInstance(Locale.CHINA);
+        if (!calendar.isChecked()) {
+            setDate();
+        }
+
+        p.setDate(executeDate);
+        if (message.length()>3){
+            Pattern pattern = Pattern.compile("[0-2][0-9][:.][0-5][0-9]");
+            final Matcher matcher = pattern.matcher(message);
+            if (!matcher.find()){
+                p.save();
+                return p;
+            }
+            ThreadPoolManager.getInstance().addTask(new Runnable() {
+                @Override
+                public void run() {
+                    String time = matcher.group();
+                    time = time.replace(".",":");
+                    String[] arr = time.split(":");
+
+                    p.setTime(time);
+
+                    int hour = Integer.valueOf(arr[0]);
+                    int minute = Integer.valueOf(arr[1]);
+                    if (hour>23) {
+                        p.save();
+                        return;
+                    }
+
+                    c.set(selectYear,selectMonth,selectDay,hour,minute);
+                    long executeTime = c.getTimeInMillis();
+                    p.setExecuteTime(String.valueOf(executeTime));
+                    p.save();
+
+                    L.e("setTimer",String.valueOf(System.currentTimeMillis()));
+                    L.e("setTimer",p.toString());
+
+                    if (executeTime-System.currentTimeMillis() <5*1000) return;
+
+                    AlarmManager manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                    Intent intent = new Intent(MainActivity.this,AlarmBroadcastReceiver.class);
+                    intent.putExtra("programmeId",p.getProgrammeId());
+                    intent.putExtra("executeTime",p.getExecuteTime());
+                    PendingIntent pendingIntent = PendingIntent
+                            .getBroadcast(MainActivity.this,p.getRequestCode(),intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    manager.setExact(AlarmManager.RTC_WAKEUP,executeTime,pendingIntent);
+
+                }
+            });
+        }else {
+            p.save();
+        }
+        return p;
+    }
+    private void setDate(){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+
+        executeDate = format.format(date);
+        selectYear = date.getYear()+1900;
+        selectMonth = date.getMonth();
+        selectDay = date.getDate();
+
+    }
+
+    private Runnable showSelectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            List<Programme> list = DataSupport.where("date = ?",executeDate).find(Programme.class);
+            if (list==null) list = new ArrayList<>();
+            Collections.reverse(list);
+            List<ExtraProgramme> extra = new ArrayList<>();
+            for (Programme p : list){
+                extra.add(new ExtraProgramme(p));
+            }
+            adapter.setProgrammeSelectedDate(extra);
+            handle.sendEmptyMessage(0);
+        }
+    };
+    @Override
+    public void onResume(){
+        super.onResume();
+        SharedPreferences preferences = getSharedPreferences(Global.MUSIC_URL_NAME,Context.MODE_PRIVATE);
+        Global.MUSIC_URL = preferences.getString(Global.MUSIC_URL_NAME,"无");
+    }
+    class SetTimerRunnable implements Runnable{
+        public SetTimerRunnable(Programme p){
+            this.p = p;
+        }
+        private Programme p;
+        @Override
+        public void run() {
+            String executeTime = p.getExecuteTime();
+            if (TextUtils.isEmpty(executeTime)) return;
+
+            long executeTimer = Long.valueOf(p.getExecuteTime());
+            if (executeTimer-System.currentTimeMillis() > 5*1000){
+                AlarmManager manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(MainActivity.this,AlarmBroadcastReceiver.class);
+                intent.putExtra("programmeId",p.getProgrammeId());
+                intent.putExtra("executeTime",executeTime);
+                PendingIntent pendingIntent = PendingIntent
+                        .getBroadcast(MainActivity.this,p.getRequestCode(),intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                manager.setExact(AlarmManager.RTC_WAKEUP,executeTimer,pendingIntent);
+                L.e("SetTimerRunnable",String.valueOf(System.currentTimeMillis()));
+                L.e("SetTimerRunnable",p.toString());
+            }
         }
     }
 
@@ -396,7 +566,8 @@ public class MainActivity extends BaseActivity  {
                         weakReference.get().voiceInput.setPressed(false);
                     }
                     String resultInfo = (String)msg.obj;
-                    ExtraProgramme programme = new ExtraProgramme(Global.saveProgramme(resultInfo));
+                    Programme p = weakReference.get().setTimer(resultInfo);
+                    ExtraProgramme programme = new ExtraProgramme(p);
                     weakReference.get().adapter.insertProgramme(programme);
                     break;
                 case MyRecognizerListener.MSG_PARSE_ERR:
@@ -436,4 +607,22 @@ public class MainActivity extends BaseActivity  {
         });
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+        L.e("KeyEvent","---keyCode ="+keyCode );
+        L.e("KeyEvent","---getAction ="+event.getAction() );
+        if (keyCode==67 ){
+            if (textInput.hasFocus()){
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm !=null ){
+                    imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+                textInput.clearFocus();
+
+                return true;
+            }
+        }
+
+        return super.onKeyDown(keyCode,event);
+    }
 }

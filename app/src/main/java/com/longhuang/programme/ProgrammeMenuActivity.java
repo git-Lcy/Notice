@@ -1,13 +1,13 @@
 package com.longhuang.programme;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
-import android.content.Context;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,13 +34,12 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
     private TimePicker mTimePicker;
     private AlertDialog dialog;
 
-    private TextView dateTimeView,repeatView,ringingView;
+    private TextView dateTimeView,repeatView,ringingView,ringing,vibrate;
     private TextView deleteNoticeView;
     private EditText noticeEditView;
 
     private Programme mProgramme;
     private int repeat;
-    private long executeTimer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,46 +66,51 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 break;
             case R.id.ok:
                 mProgramme.setMessage(noticeEditView.getText().toString());
-
-                if (executeTimer-System.currentTimeMillis() > 60*1000){
-                    AlarmManager manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-                    Intent intent = new Intent(ProgrammeMenuActivity.this,AlarmBroadcastReceiver.class);
-                    intent.putExtra("programmeId",mProgramme.getProgrammeId());
-                    intent.putExtra("executeTime",mProgramme.getExecuteTime());
-                    PendingIntent pendingIntent = PendingIntent
-                            .getBroadcast(this,0,intent,0);
-                    manager.setExact(AlarmManager.RTC_WAKEUP,executeTimer,pendingIntent);
-                    L.e("BroadcastReceiver","--- manager.setExact  id = "+mProgramme.getProgrammeId());
-                }else {
-                    mProgramme.setExecuted(true);
-                }
                 setResult(Global.EDIT_SAVE);
+                L.e("SAVE_EDIT",mProgramme.toString());
                 finish();
                 break;
         }
         return true;
     }
     private void initView(){
-        mProgramme = Global.getProgrammeInfo();
-        executeTimer = 0;
+        mProgramme = Global.programme = new Programme();
+        if (Global.programmeCache.size()!=0) mProgramme.setProgrammeInfo(Global.programmeCache.get(0).getProgramme());
+
         dateTimeView = findViewById(R.id.date_time_text);
         repeatView = findViewById(R.id.repeat_text);
-        ringingView = findViewById(R.id.ringing_text);
+        ringing = findViewById(R.id.ringing);
+        vibrate = findViewById(R.id.vibrate);
+        ringingView = findViewById(R.id.ringing_url);
         noticeEditView = findViewById(R.id.notice_edit);
 
         deleteNoticeView = findViewById(R.id.delete_notice);
     }
     private void initEvent(){
         repeat = mProgramme.getRepeatType();
-        repeatView.setText(repeat==0 ? "只提醒一次" : "每天" );
+
         String info = mProgramme.getMessage();
-        String time = mProgramme.getExecuteTime();
-        noticeEditView.setText(TextUtils.isEmpty(info) ? "提醒" : info);
+        String date = mProgramme.getDate();
+        String time = mProgramme.getTime();
         String ringUrl = mProgramme.getRingingUrl();
-        ringingView.setText(TextUtils.isEmpty(ringUrl)?"无" : ringUrl);
-        dateTimeView.setText(TextUtils.isEmpty(time)?"" : time);
+
+        String music = getMusic(ringUrl);
+
+        repeatView.setText(repeat==0 ? "只提醒一次" : "每天" );
+        ringing.setText(mProgramme.isRinging() ? "开" : "关");
+        vibrate.setText(mProgramme.isVibrate() ? "开" : "关");
+        noticeEditView.setText(TextUtils.isEmpty(info) ? "提醒" : info);
+
+        ringingView.setText(music);
+
+        if(!TextUtils.isEmpty(date) && !TextUtils.isEmpty(time)){
+            dateTimeView.setText(date+" "+time);
+        }
+
         dateTimeView.setOnClickListener(this);
         repeatView.setOnClickListener(this);
+        ringing.setOnClickListener(this);
+        vibrate.setOnClickListener(this);
         ringingView.setOnClickListener(this);
         deleteNoticeView.setOnClickListener(this);
 
@@ -140,30 +144,48 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 Calendar calendar = Calendar.getInstance(Locale.CHINA);
 
                 calendar.set(year,month,day,hour,minute);
-                executeTimer = calendar.getTimeInMillis();
+                long execute = calendar.getTimeInMillis();
+                mProgramme.setExecuteTime(String.valueOf(execute));
 
                 StringBuilder builder = new StringBuilder();
                 builder.append(year).append("-");
                 if (month<10) builder.append(0);
                 builder.append(month).append("-");
                 if (day<10) builder.append(0);
-                builder.append(day).append(" ");
+                builder.append(day);
+                String date = builder.toString();
+                mProgramme.setDate(date);
+                builder.setLength(0);
                 if (hour<10) builder.append(0);
                 builder.append(hour).append(":");
                 if (minute<10) builder.append(0);
                 builder.append(minute);
-                String executeTime = builder.toString();
+                String time = builder.toString();
+                mProgramme.setTime(time);
 
-                mProgramme.setExecuteTime(executeTime);
-                dateTimeView.setText(executeTime);
+                dateTimeView.setText(date+" "+time);
                 dialog.dismiss();
             case R.id.repeat_text:
-                repeat = repeat==0? 1 : 0;
+
+                repeat = (mProgramme.getRepeatType()==0? 1 : 0);
                 repeatView.setText(repeat==0 ? "只提醒一次" : "每天" );
                 mProgramme.setRepeatType(repeat);
                 break;
-            case R.id.ringing_text:
+            case R.id.ringing:
+                boolean isRing = !mProgramme.isRinging();
+                ringing.setText(isRing ? "开" : "关");
+                mProgramme.setRinging(isRing);
+                break;
+            case R.id.vibrate:
+                boolean isVibrate = !mProgramme.isVibrate();
+                vibrate.setText(isVibrate ? "开" : "关");
+                mProgramme.setVibrate(isVibrate);
+                break;
+            case R.id.ringing_url:
+                Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT);
 
+                pickIntent.setDataAndType(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio/*");
+                startActivityForResult(pickIntent, Global.AUDIO_REQUEST_CODE);
                 break;
             case R.id.delete_notice:
                 setResult(Global.EDIT_DELETE);
@@ -173,8 +195,34 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
     }
 
     @Override
+    public void onActivityResult(int requestCode,int resultCode,Intent data){
+        super.onActivityResult(requestCode,resultCode,data);
+        if (data==null) return;
+        String ringingPath = L.handleImage(this,data);
+
+        mProgramme.setRingingUrl(ringingPath);
+        String music = getMusic(ringingPath);
+        ringingView.setText(music);
+    }
+    @Override
     public void onDestroy(){
         super.onDestroy();
+    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+        if (keyCode == KeyEvent.KEYCODE_BACK){
+            setResult(Global.EDIT_CANCEL);
+            finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode,event);
+    }
 
+    private String getMusic(String musicPath){
+        if (TextUtils.isEmpty(musicPath)) return "无";
+        int index = musicPath.lastIndexOf("/")+1;
+        if (index == 0 ) return "无";
+        String music = musicPath.substring(index,musicPath.length());
+        return music;
     }
 }

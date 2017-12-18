@@ -1,13 +1,5 @@
 package com.longhuang.programme.utils;
 
-import android.annotation.TargetApi;
-import android.content.ContentUris;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.text.TextUtils;
 
 import com.longhuang.programme.module.ExtraProgramme;
 import com.longhuang.programme.module.Programme;
@@ -18,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,78 +22,32 @@ public class Global {
     public static final int CONFIG_REQUEST_CODE = 1;
     public static final int CAMERA_REQUEST_CODE = 2;
     public static final int ALBUM_REQUEST_CODE = 3;
+    public static final int AUDIO_REQUEST_CODE = 4;
 
     public static final int EDIT_SAVE = 0;
     public static final int EDIT_CANCEL = 1;
     public static final int EDIT_DELETE = 2;
 
+    public static final String MUSIC_URL_NAME = "music_url";
     public static boolean VOICE_ENABLE;
     public static int index;
-    private static final Programme programme = new Programme();
+    public static Programme programme ;
     public static  List<ExtraProgramme> programmeList=new ArrayList<>();// 所有提醒列表
     public static  List<ExtraProgramme> programmeCache=new ArrayList<>();// 被选中提醒列表
+    public static ArrayList<Integer> alarmRequestCodes = new ArrayList<>();
+    public static String MUSIC_URL;
 
-    public static Programme getProgrammeInfo(){
+
+    public static Programme getEditProgramme(){
         if (programmeCache.size()==0){
-            programme.clear();
-            saveProgramme(programme);
-
-        }else {
-            Programme p = programmeCache.get(0).getProgramme();
-            programme.setProgrammeInfo(p);
-            programme.setProgrammeId(p.getProgrammeId());
-            programme.setDate(p.getDate());
+            return programme;
         }
-        return programme;
-    }
-
-
-    public static Programme setProgrammeInfo(){
-        Programme p;
-        if (programmeCache.size()==0){
-            p = new Programme();
-            p.setProgrammeInfo(programme);
-            p.save();
-            return p;
-        }
-
-        p = programmeCache.get(0).getProgramme();
+        Programme p = programmeCache.get(0).getProgramme();
         p.setProgrammeInfo(programme);
-        p.save();
         index = programmeList.indexOf(programmeCache.get(0));
-        clearCache();
-        return null;
-    }
-    /**
-     * 创建提醒对象 Programme
-     * @param message 提醒信息
-     *
-     */
-    public static Programme saveProgramme(String message){
-        Programme programme = new Programme();
-        programme.setMessage(message);
-        saveProgramme(programme);
-        boolean result = programme.save();
-        L.e("GLOBAL","---- create programme  save() = "+result);
-        return programme;
+        return p;
     }
 
-    /**
-     * 为新创建的 p 设置日期及唯一
-     * @param p 要操作的对象
-     */
-    public static void saveProgramme(Programme p){
-        long currentTime = System.currentTimeMillis();
-        Date date = new Date(currentTime);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
- //       SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
-        String id = String.valueOf(currentTime);
-        String dateF = format.format(date);
-        p.setProgrammeId(id);
-        L.e("GLOBAL","---- create programme  id = "+currentTime);
-        L.e("GLOBAL","---- create programme  date = "+dateF);
-        p.setDate(dateF);
-    }
 
     /*
      * 从数据库中获取所有提醒信息
@@ -110,9 +57,11 @@ public class Global {
         if (programmes==null || programmes.size()==0) return;
         Collections.reverse(programmes);
 
+        if (alarmRequestCodes.size()!=0) alarmRequestCodes.clear();
         if (programmeList.size()>0) programmeList.clear();
         for (Programme p : programmes){
             programmeList.add(new ExtraProgramme(p));
+            alarmRequestCodes.add(p.getRequestCode());
             L.e("Global"," ------ Programme id = "+p.getProgrammeId());
         }
 
@@ -127,21 +76,7 @@ public class Global {
         programmeCache.clear();
         return true;
     }
-    /**
-     * 将设置界面添加的新提醒保存至数据库
-     * @param extra 需要保存的提醒
-     */
-    public static  void editSave( ExtraProgramme extra){
-        final Programme programme = extra.getProgramme();
-        ThreadPoolManager.getInstance().addTask(new Runnable() {
-            @Override
-            public void run() {
 
-                programme.save();
-            }
-        });
-
-    }
     /**
      * 裁剪图片方法实现
      *

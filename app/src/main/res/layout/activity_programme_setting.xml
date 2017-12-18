@@ -9,7 +9,7 @@
     tools:context="com.longhuang.programme.ProgrammeNoticeShowActivity">
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="25dp"
         android:layout_marginRight="25dp"
         android:id="@+id/notice_info"
@@ -19,12 +19,12 @@
         tools:text="jkjkljkl;jkljkljk"
         android:background="@drawable/button"/>
 
-    <ImageButton
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+    <ImageView
+        android:layout_width="130dp"
+        android:layout_height="60dp"
         android:id="@+id/notice_btn"
         android:background="@null"
         android:layout_marginTop="45dp"
-        android:src="@mipmap/ok"/>
+        android:src="@mipmap/notice_ok"/>
 
 </LinearLayout>
