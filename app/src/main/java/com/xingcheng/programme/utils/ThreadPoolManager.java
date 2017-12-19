@@ -1,7 +1,6 @@
-package com.longhuang.programme.utils;
+package com.xingcheng.programme.utils;
 
 import java.util.Comparator;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;

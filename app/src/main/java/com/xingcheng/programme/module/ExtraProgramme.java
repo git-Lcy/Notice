@@ -1,4 +1,4 @@
-package com.longhuang.programme.module;
+package com.xingcheng.programme.module;
 
 /**
  * Created by lfy on 2017/12/7.

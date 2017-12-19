@@ -1,33 +1,33 @@
-package com.longhuang.programme;
+package com.xingcheng.programme;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.Vibrator;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.longhuang.programme.imp.AlarmBroadcastReceiver;
-import com.longhuang.programme.module.Programme;
-import com.longhuang.programme.utils.L;
-import com.longhuang.programme.utils.ThreadPoolManager;
+import com.xingcheng.programme.imp.AlarmBroadcastReceiver;
+import com.xingcheng.programme.module.Programme;
+import com.xingcheng.programme.utils.L;
+import com.xingcheng.programme.utils.ThreadPoolManager;
 
 import org.litepal.crud.DataSupport;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,16 +41,7 @@ public class ProgrammeNoticeShowActivity extends BaseActivity {
     private PowerManager.WakeLock mWakelock;
     private StringBuilder mBuilder;
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        InitArg();
-    }
-    private void InitArg(){
 
-        //其他操作
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,15 +142,22 @@ public class ProgrammeNoticeShowActivity extends BaseActivity {
 			return;
 		}
 
+
 		// 异步执行铃声播放
 		ThreadPoolManager.getInstance().addTask(new Runnable() {
 			@Override
 			public void run() {
 
+			    SystemClock.sleep(5*1000);
+
 				mediaPlayer=new MediaPlayer();
+
 				mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+
 				mBuilder.setLength(0);
 				try {
+                    mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mediaPlayer.setVolume(1.0f,1.0f);
 					mediaPlayer.setDataSource(ringUrl);
 					mediaPlayer.prepare();
 					mediaPlayer.start();
@@ -189,10 +187,11 @@ public class ProgrammeNoticeShowActivity extends BaseActivity {
     public void onResume(){
         super.onResume();
         // 熄屏状态下唤醒屏幕
-        PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+  //      PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
 
-        mWakelock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.SCREEN_DIM_WAKE_LOCK, "SimpleTimer");
-        mWakelock.acquire();
+   //     mWakelock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE, getClass().getName());
+
+   //     if (mWakelock!=null) mWakelock.acquire();
     }
     @Override
     public void onStop(){

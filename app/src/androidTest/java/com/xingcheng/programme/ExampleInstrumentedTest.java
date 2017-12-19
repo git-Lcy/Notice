@@ -1,4 +1,4 @@
-package com.longhuang.programme;
+package com.xingcheng.programme;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.longhuang.programme", appContext.getPackageName());
+        assertEquals("com.com.xingcheng.programme", appContext.getPackageName());
     }
 }

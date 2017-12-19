@@ -1,4 +1,4 @@
-package com.longhuang.programme.imp;
+package com.xingcheng.programme.imp;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,8 +8,8 @@ import android.text.TextUtils;
 import com.iflytek.cloud.RecognizerListener;
 import com.iflytek.cloud.RecognizerResult;
 import com.iflytek.cloud.SpeechError;
-import com.longhuang.programme.utils.L;
-import com.longhuang.programme.utils.ThreadPoolManager;
+import com.xingcheng.programme.utils.L;
+import com.xingcheng.programme.utils.ThreadPoolManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;

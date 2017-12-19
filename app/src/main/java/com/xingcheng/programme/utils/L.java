@@ -1,4 +1,4 @@
-package com.longhuang.programme.utils;
+package com.xingcheng.programme.utils;
 
 import android.annotation.TargetApi;
 import android.content.ContentUris;

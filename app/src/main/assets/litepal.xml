@@ -3,6 +3,6 @@
     <dbname value="ProgrammeManager"></dbname>
     <version value="1"></version>
     <list >
-        <mapping class="com.longhuang.programme.module.Programme"></mapping>
+        <mapping class="com.xingcheng.programme.module.Programme"></mapping>
     </list>
 </litepal>

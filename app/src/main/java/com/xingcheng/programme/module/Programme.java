@@ -1,18 +1,8 @@
-package com.longhuang.programme.module;
+package com.xingcheng.programme.module;
 
-import android.text.TextUtils;
-
-import com.longhuang.programme.utils.Global;
+import com.xingcheng.programme.utils.Global;
 
 import org.litepal.crud.DataSupport;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Administrator on 2017/11/14.

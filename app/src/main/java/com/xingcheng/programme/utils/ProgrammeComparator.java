@@ -1,6 +1,6 @@
-package com.longhuang.programme.utils;
+package com.xingcheng.programme.utils;
 
-import com.longhuang.programme.module.Programme;
+import com.xingcheng.programme.module.Programme;
 
 import java.util.Comparator;
 

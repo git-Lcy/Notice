@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
     defaultConfig {
-        applicationId "com.longhuang.programme"
+        applicationId "com.xingcheng.programme"
         minSdkVersion 19
         targetSdkVersion 22
         versionCode 1

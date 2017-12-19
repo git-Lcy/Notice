@@ -1,4 +1,4 @@
-package com.longhuang.programme;
+package com.xingcheng.programme;
 
 import org.junit.Test;
 

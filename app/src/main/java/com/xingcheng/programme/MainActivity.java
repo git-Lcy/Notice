@@ -1,4 +1,4 @@
-package com.longhuang.programme;
+package com.xingcheng.programme;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -45,14 +45,14 @@ import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechSynthesizer;
-import com.longhuang.programme.imp.AlarmBroadcastReceiver;
-import com.longhuang.programme.imp.MyRecognizerListener;
-import com.longhuang.programme.imp.MySynthesizerListener;
-import com.longhuang.programme.module.ExtraProgramme;
-import com.longhuang.programme.module.Programme;
-import com.longhuang.programme.utils.Global;
-import com.longhuang.programme.utils.L;
-import com.longhuang.programme.utils.ThreadPoolManager;
+import com.xingcheng.programme.imp.AlarmBroadcastReceiver;
+import com.xingcheng.programme.imp.MyRecognizerListener;
+import com.xingcheng.programme.imp.MySynthesizerListener;
+import com.xingcheng.programme.module.ExtraProgramme;
+import com.xingcheng.programme.module.Programme;
+import com.xingcheng.programme.utils.Global;
+import com.xingcheng.programme.utils.L;
+import com.xingcheng.programme.utils.ThreadPoolManager;
 
 import org.litepal.crud.DataSupport;
 import org.litepal.tablemanager.Connector;
@@ -88,6 +88,7 @@ public class MainActivity extends BaseActivity  {
     private MyHandler handle;
     private String path;
 
+    private LinearLayoutManager manager;
     private String executeDate;
     private int selectYear,selectMonth,selectDay;
 
@@ -152,7 +153,7 @@ public class MainActivity extends BaseActivity  {
 						// 获取图片uri
                         Uri imageUri;
                         if (Build.VERSION.SDK_INT>=24){
-                            imageUri = FileProvider.getUriForFile(MainActivity.this,"com.longhuang.programme.fileprovide",outputImage);
+                            imageUri = FileProvider.getUriForFile(MainActivity.this,"com.com.xingcheng.programme.fileprovide",outputImage);
                         }else {
                             imageUri = Uri.fromFile(outputImage);
                         }
@@ -230,7 +231,8 @@ public class MainActivity extends BaseActivity  {
         if (drawable!=null) mainSkin.setBackground(drawable);//设置背景
         handle = new MyHandler(this);
         adapter = new ProgrammeAdapter(MainActivity.this);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        manager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 		
 		//日历监听选中日期
@@ -343,7 +345,7 @@ public class MainActivity extends BaseActivity  {
         sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-		//		recyclerview.scrolltoposition(0);
+
                 String message = textInput.getText().toString();
                 textInput.setText("");
                 Programme p = setTimer(message);
@@ -358,6 +360,7 @@ public class MainActivity extends BaseActivity  {
 
 				//首位插入提醒
                 adapter.insertProgramme(programme);
+                moveToPosition();//列表显示最顶端
             }
         });
 		
@@ -612,6 +615,7 @@ public class MainActivity extends BaseActivity  {
                     Programme p = weakReference.get().setTimer(resultInfo);
                     ExtraProgramme programme = new ExtraProgramme(p);
                     weakReference.get().adapter.insertProgramme(programme);
+                    weakReference.get().moveToPosition();
                     break;
                 case MyRecognizerListener.MSG_PARSE_ERR:
                     if (weakReference.get().voiceInput.isPressed()){
@@ -623,8 +627,23 @@ public class MainActivity extends BaseActivity  {
         }
 
     }
-	
-	//复制背景图片到指定目录
+
+    private void moveToPosition() {
+
+        int firstItem = manager.findFirstVisibleItemPosition();
+        int lastItem = manager.findLastVisibleItemPosition();
+        if (0 <= firstItem) {
+            recyclerView.scrollToPosition(0);
+        } else if (0 <= lastItem) {
+            int top = recyclerView.getChildAt(0 - firstItem).getTop();
+            recyclerView.scrollBy(0, top);
+        } else {
+            recyclerView.scrollToPosition(0);
+        }
+
+    }
+
+    //复制背景图片到指定目录
     private void corpImage(final String oldPath){
         ThreadPoolManager.getInstance().addTask(new Runnable() {
             @Override

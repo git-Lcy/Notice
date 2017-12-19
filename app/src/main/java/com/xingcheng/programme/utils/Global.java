@@ -1,18 +1,14 @@
-package com.longhuang.programme.utils;
+package com.xingcheng.programme.utils;
 
 
-import com.longhuang.programme.module.ExtraProgramme;
-import com.longhuang.programme.module.Programme;
+import com.xingcheng.programme.module.ExtraProgramme;
+import com.xingcheng.programme.module.Programme;
 
 import org.litepal.crud.DataSupport;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by Administrator on 2017/11/29.

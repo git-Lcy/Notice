@@ -1,4 +1,4 @@
-package com.longhuang.programme;
+package com.xingcheng.programme;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -15,12 +15,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.iflytek.cloud.SpeechSynthesizer;
-import com.longhuang.programme.imp.AlarmBroadcastReceiver;
-import com.longhuang.programme.imp.MySynthesizerListener;
-import com.longhuang.programme.module.ExtraProgramme;
-import com.longhuang.programme.module.Programme;
-import com.longhuang.programme.utils.Global;
-import com.longhuang.programme.utils.ThreadPoolManager;
+import com.xingcheng.programme.imp.AlarmBroadcastReceiver;
+import com.xingcheng.programme.imp.MySynthesizerListener;
+import com.xingcheng.programme.module.ExtraProgramme;
+import com.xingcheng.programme.module.Programme;
+import com.xingcheng.programme.utils.Global;
+import com.xingcheng.programme.utils.ThreadPoolManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +32,8 @@ import java.util.List;
 
 public class ProgrammeAdapter extends RecyclerView.Adapter {
 
-    private List<ExtraProgramme> programmeList ;
-    private List<ExtraProgramme> programmeSelectedDate ;
+    private List<ExtraProgramme> programmeList ;//所有提醒列表
+    private List<ExtraProgramme> programmeSelectedDate ;//选定日期的提醒列表
     private LayoutInflater inflater;
     private Context context;
     private boolean isCalendarData;
@@ -216,6 +216,9 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
                 Intent intent = new Intent(context,AlarmBroadcastReceiver.class);
                 for (ExtraProgramme programme : Global.programmeCache){
                     Programme p = programme.getProgramme();
+
+                    if (TextUtils.isEmpty(p.getExecuteTime())) continue;
+
                     int request = programme.getProgramme().getRequestCode();
                     intent.putExtra("programmeId",p.getProgrammeId());
                     intent.putExtra("executeTime",p.getExecuteTime());

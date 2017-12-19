@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context="com.longhuang.programme.ProgrammeNoticeShowActivity">
+    tools:context="com.xingcheng.programme.ProgrammeNoticeShowActivity">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

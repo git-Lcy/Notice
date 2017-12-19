@@ -1,4 +1,4 @@
-package com.longhuang.programme;
+package com.xingcheng.programme;
 
 import android.app.AlertDialog;
 
@@ -17,15 +17,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.longhuang.programme.imp.AlarmBroadcastReceiver;
-import com.longhuang.programme.module.Programme;
-import com.longhuang.programme.utils.Global;
-import com.longhuang.programme.utils.L;
+import com.xingcheng.programme.module.Programme;
+import com.xingcheng.programme.utils.Global;
+import com.xingcheng.programme.utils.L;
 
-import java.sql.Date;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
 
 
 public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickListener{
@@ -167,6 +164,7 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
 
                 dateTimeView.setText(date+" "+time);
                 dialog.dismiss();
+                break;
             case R.id.repeat_text:
 
                 repeat = (mProgramme.getRepeatType()==0? 1 : 0);

@@ -1,17 +1,15 @@
-package com.longhuang.programme.imp;
+package com.xingcheng.programme.imp;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 
-import com.longhuang.programme.ProgrammeNoticeShowActivity;
-import com.longhuang.programme.module.Programme;
-import com.longhuang.programme.utils.L;
+import com.xingcheng.programme.ProgrammeNoticeShowActivity;
+import com.xingcheng.programme.module.Programme;
+import com.xingcheng.programme.utils.L;
 
 import org.litepal.crud.DataSupport;
-
-import java.util.List;
 
 
 /**
@@ -19,7 +17,7 @@ import java.util.List;
  */
 
 public class AlarmBroadcastReceiver extends BroadcastReceiver {
-    public static final String ALARM_ACTION = "com.longhuang.programme.ACTION_ALARM";
+    public static final String ALARM_ACTION = "com.com.xingcheng.programme.ACTION_ALARM";
     @Override
     public void onReceive(Context context, Intent intent) {
 
