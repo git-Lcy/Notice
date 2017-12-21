@@ -23,15 +23,11 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
         String id = intent.getStringExtra("programmeId");
         String time = intent.getStringExtra("executeTime");
-        L.e("BroadcastReceiver","--- programmeId = "+id+"  ; time = "+time);
         if (TextUtils.isEmpty(id) || TextUtils.isEmpty(time)) return;
 
         boolean exist = DataSupport.isExist(Programme.class,"programmeId = ? and executeTime = ?",id,time);
         L.e("BroadcastReceiver","--- id = "+id + "   exist = "+exist);
-        if (!exist ) {
-            L.e("BroadcastReceiver","--- programmeId not found");
-            return;
-        }
+        if (!exist ) return;
 
         Intent noticeIntent = new Intent(context, ProgrammeNoticeShowActivity.class);
         noticeIntent.putExtra("programmeId",id);

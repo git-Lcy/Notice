@@ -1,5 +1,6 @@
 package com.xingcheng.programme;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -19,6 +20,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.xingcheng.programme.imp.AlarmBroadcastReceiver;
 import com.xingcheng.programme.module.Programme;
@@ -32,7 +34,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ProgrammeNoticeShowActivity extends BaseActivity {
+public class ProgrammeNoticeShowActivity extends Activity{
 
     private TextView noticeInfo;
     private ImageView noticeBtn;
@@ -131,14 +133,14 @@ public class ProgrammeNoticeShowActivity extends BaseActivity {
 
 		//铃声路径为空
 		if (!p.isRinging() || TextUtils.isEmpty(ringUrl) || ringUrl.equals("无")) {
-			noticeInfo.setText("无");
-			return;
+            Toast.makeText(this, "无铃声", Toast.LENGTH_SHORT).show();
+            return;
         }
 		
 		//铃声文件不存在
 		File musicFile = new File(ringUrl);
 		if (!musicFile.exists()){
-			noticeInfo.setText("音乐文件不存在");
+            Toast.makeText(this, "铃声不存在", Toast.LENGTH_SHORT).show();
 			return;
 		}
 
@@ -148,14 +150,23 @@ public class ProgrammeNoticeShowActivity extends BaseActivity {
 			@Override
 			public void run() {
 
-			    SystemClock.sleep(5*1000);
+	//		    SystemClock.sleep(5*1000);
 
 				mediaPlayer=new MediaPlayer();
 
 				mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-
+                mediaPlayer.setLooping(true);
+                mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        Toast.makeText(ProgrammeNoticeShowActivity.this,
+                                "铃声播放出错 what:"+what+" ; extra:"+extra, Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                });
 				mBuilder.setLength(0);
 				try {
+
                     mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     mediaPlayer.setVolume(1.0f,1.0f);
 					mediaPlayer.setDataSource(ringUrl);
@@ -163,11 +174,11 @@ public class ProgrammeNoticeShowActivity extends BaseActivity {
 					mediaPlayer.start();
 					mBuilder.append("播放正常").append("\n");
 				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
+
 					mBuilder.append("IllegalArgumentException-").append(e.getMessage()).append("\n");
 					e.printStackTrace();
 				} catch (IllegalStateException e) {
-					// TODO Auto-generated catch block
+
 					mBuilder.append("IllegalStateException-").append(e.getMessage()).append("\n");
 					e.printStackTrace();
 				} catch (IOException e) {

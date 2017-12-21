@@ -1,11 +1,21 @@
 package com.xingcheng.programme.utils;
 
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.os.Environment;
+
 import com.xingcheng.programme.module.ExtraProgramme;
 import com.xingcheng.programme.module.Programme;
 
 import org.litepal.crud.DataSupport;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +29,7 @@ public class Global {
     public static final int CAMERA_REQUEST_CODE = 2;
     public static final int ALBUM_REQUEST_CODE = 3;
     public static final int AUDIO_REQUEST_CODE = 4;
+    public static final int PHOTO_REQUEST_CUT = 5;
 
     public static final int EDIT_SAVE = 0;
     public static final int EDIT_CANCEL = 1;
@@ -73,18 +84,23 @@ public class Global {
         return true;
     }
 
-    /**
-     * 裁剪图片方法实现
-     *
-     * @param uri
-     */
- /*   public void startCropActivity(Uri uri) {
-        UCrop.of(uri, mDestinationUri)
-                .withAspectRatio(1, 1)
-                .withMaxResultSize(512, 512)
-                .withTargetActivity(CropActivity.class)
-                .start(mActivity, this);
+
+    @SuppressLint("SdCardPath")
+    public static void saveBitmap(String path,Bitmap bitmap) {
+        File tempFile = new File(path);
+        if (tempFile.exists()) {
+            tempFile.delete();
+        }
+        try {
+            FileOutputStream out = new FileOutputStream(tempFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    */
 
 }

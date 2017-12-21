@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -23,6 +25,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -88,6 +92,7 @@ public class MainActivity extends BaseActivity  {
     private MyHandler handle;
     private String path;
 
+    private int width,height;
     private LinearLayoutManager manager;
     private String executeDate;
     private int selectYear,selectMonth,selectDay;
@@ -227,6 +232,9 @@ public class MainActivity extends BaseActivity  {
     }
 
     private void initEvent(){
+        //获取默认铃声路径
+        SharedPreferences preferences = getSharedPreferences(Global.MUSIC_URL_NAME,Context.MODE_PRIVATE);
+        Global.MUSIC_URL = preferences.getString(Global.MUSIC_URL_NAME,"无");
         Drawable drawable = BitmapDrawable.createFromPath(path);//从路径中读取图片
         if (drawable!=null) mainSkin.setBackground(drawable);//设置背景
         handle = new MyHandler(this);
@@ -234,7 +242,9 @@ public class MainActivity extends BaseActivity  {
         manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
-		
+
+        width = mainSkin.getMeasuredWidth();
+        height = mainSkin.getMeasuredHeight();
 		//日历监听选中日期
         mDatePicker.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -400,27 +410,44 @@ public class MainActivity extends BaseActivity  {
                 if (Global.clearCache()) adapter.notifyDataSetChanged();
                 break;
             case Global.CAMERA_REQUEST_CODE://拍照回调
+                File file = new File(path);
+                if (!file.exists()) break;
+                startPhotoZoom(Uri.fromFile(file), 150);
+                break;
+            case Global.ALBUM_REQUEST_CODE://选择图片回调
+                if (data==null) break;
+
+                String imagePath = L.handleImage(this,data);
+                File file1 = new File(imagePath);
+                startPhotoZoom(Uri.fromFile(file1), 150);
+
+                break;
+            case Global.AUDIO_REQUEST_CODE://选择铃声回调
+                String musicPath = L.handleImage(this,data);
+                if (TextUtils.isEmpty(musicPath)) {
+                    L.toast(this,"选择铃声失败");
+                    break;
+                }
+
+				//存储默认铃声路径
+                SharedPreferences preferences = getSharedPreferences(Global.MUSIC_URL_NAME,Context.MODE_PRIVATE);
+                preferences.edit().putString(Global.MUSIC_URL_NAME,musicPath).apply();
+
+                Global.MUSIC_URL = musicPath;
+                break;
+            case Global.PHOTO_REQUEST_CUT:
+                if (data==null) break;
+                Bundle bundle = data.getExtras();
+                if (bundle != null) {
+                    Bitmap bitmap = bundle.getParcelable("data");
+                    Global.saveBitmap(path,bitmap);
+                }
                 Drawable drawable = BitmapDrawable.createFromPath(path);
+
                 if (drawable==null) break;
 
                 mainSkin.setBackground(drawable);
                 break;
-            case Global.ALBUM_REQUEST_CODE://选择图片回调
-                String imagePath = L.handleImage(this,data);
-                Drawable dra = BitmapDrawable.createFromPath(imagePath);
-
-                if (dra==null) break;
-                corpImage(imagePath);
-                mainSkin.setBackground(dra);
-                break;
-            case Global.AUDIO_REQUEST_CODE://选择铃声回调
-                String musicPath = L.handleImage(this,data);
-                if (TextUtils.isEmpty(musicPath)) break;
-
-				//存储默认铃声路径
-                SharedPreferences preferences = getSharedPreferences(Global.MUSIC_URL_NAME,Context.MODE_PRIVATE);
-                preferences.edit().putString(Global.MUSIC_URL_NAME,musicPath);
-                Global.MUSIC_URL = musicPath;
         }
     }
 
@@ -519,9 +546,6 @@ public class MainActivity extends BaseActivity  {
     public void onResume(){
         super.onResume();
 
-		//获取默认铃声路径
-        SharedPreferences preferences = getSharedPreferences(Global.MUSIC_URL_NAME,Context.MODE_PRIVATE);
-        Global.MUSIC_URL = preferences.getString(Global.MUSIC_URL_NAME,"无");
     }
 
 	//异步添加闹钟
@@ -669,7 +693,21 @@ public class MainActivity extends BaseActivity  {
             }
         });
     }
+    private void startPhotoZoom(Uri uri, int size) {
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri, "image/*");
+        // crop为true是设置在开启的intent中设置显示的view可以剪裁
+        intent.putExtra("crop", "true");
+        intent.putExtra("aspectX", width);
+        intent.putExtra("aspectY", height);
 
+        // outputX,outputY 是剪裁图片的宽高
+        intent.putExtra("outputX", width);
+        intent.putExtra("outputY", height);
+        intent.putExtra("return-data", true);
+
+        startActivityForResult(intent, Global.PHOTO_REQUEST_CUT);
+    }
 	
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event){
