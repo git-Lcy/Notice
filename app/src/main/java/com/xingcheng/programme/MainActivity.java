@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
@@ -147,26 +148,21 @@ public class MainActivity extends BaseActivity  {
                     public void onClick(View v) {
                         mDialog.dismiss();
 
-						//若已有背景图片择删除
                         File outputImage = new File(path);
-                        try{
-                            if (outputImage.exists()) outputImage.delete();
-                            outputImage.createNewFile();
-                        }catch (IOException e){
-                            e.printStackTrace();
-                        }
-						// 获取图片uri
                         Uri imageUri;
+                        Intent intent = new Intent();
                         if (Build.VERSION.SDK_INT>=24){
-                            imageUri = FileProvider.getUriForFile(MainActivity.this,"com.com.xingcheng.programme.fileprovide",outputImage);
+                            outputImage.getParentFile().mkdirs();
+                            imageUri = FileProvider.getUriForFile(MainActivity.this,"com.xingcheng.programme.fileprovider",outputImage);
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); //添加这一句表示对目标应用临时授权该Uri所代表的文件
                         }else {
+                            outputImage.mkdirs();
                             imageUri = Uri.fromFile(outputImage);
                         }
+                        intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);//设置Action为拍照
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);//将拍取的照片保存到指定URI
 
-                        Intent takeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        //下面这句指定调用相机拍照后的照片存储的路径
-                        takeIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                        startActivityForResult(takeIntent, Global.CAMERA_REQUEST_CODE);
+                        startActivityForResult(intent, Global.CAMERA_REQUEST_CODE);
                     }
                 });
 
@@ -243,8 +239,6 @@ public class MainActivity extends BaseActivity  {
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 
-        width = mainSkin.getMeasuredWidth();
-        height = mainSkin.getMeasuredHeight();
 		//日历监听选中日期
         mDatePicker.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -410,17 +404,12 @@ public class MainActivity extends BaseActivity  {
                 if (Global.clearCache()) adapter.notifyDataSetChanged();
                 break;
             case Global.CAMERA_REQUEST_CODE://拍照回调
-                File file = new File(path);
-                if (!file.exists()) break;
-                startPhotoZoom(Uri.fromFile(file), 150);
+                startPhotoZoom(path);
                 break;
             case Global.ALBUM_REQUEST_CODE://选择图片回调
                 if (data==null) break;
-
                 String imagePath = L.handleImage(this,data);
-                File file1 = new File(imagePath);
-                startPhotoZoom(Uri.fromFile(file1), 150);
-
+                startPhotoZoom(imagePath);
                 break;
             case Global.AUDIO_REQUEST_CODE://选择铃声回调
                 String musicPath = L.handleImage(this,data);
@@ -436,16 +425,8 @@ public class MainActivity extends BaseActivity  {
                 Global.MUSIC_URL = musicPath;
                 break;
             case Global.PHOTO_REQUEST_CUT:
-                if (data==null) break;
-                Bundle bundle = data.getExtras();
-                if (bundle != null) {
-                    Bitmap bitmap = bundle.getParcelable("data");
-                    Global.saveBitmap(path,bitmap);
-                }
                 Drawable drawable = BitmapDrawable.createFromPath(path);
-
                 if (drawable==null) break;
-
                 mainSkin.setBackground(drawable);
                 break;
         }
@@ -545,9 +526,12 @@ public class MainActivity extends BaseActivity  {
     @Override
     public void onResume(){
         super.onResume();
-
+        if (width==0){
+            width = mainSkin.getMeasuredWidth();
+            height = mainSkin.getMeasuredHeight();
+        }
+        L.e("Main","///// width = "+width+" ;  height = "+height);
     }
-
 	//异步添加闹钟
     class SetTimerRunnable implements Runnable{
         public SetTimerRunnable(Programme p){
@@ -617,6 +601,10 @@ public class MainActivity extends BaseActivity  {
             switch (msg.what){
                 case -1:
                     weakReference.get().adapter.notifyDataSetChanged();
+                    if (weakReference.get().width==0){
+                        weakReference.get().width = weakReference.get().mainSkin.getMeasuredWidth();
+                        weakReference.get().height = weakReference.get().mainSkin.getMeasuredHeight();
+                    }
                     break;
                 case 0:
                     weakReference.get().adapter.notifyDataSetChanged();
@@ -693,18 +681,32 @@ public class MainActivity extends BaseActivity  {
             }
         });
     }
-    private void startPhotoZoom(Uri uri, int size) {
+    private void startPhotoZoom(String selectPath) {
+        Uri imageUri;
+        Uri outputUri;
+        File file=new File(path);
         Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri, "image/*");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            //通过FileProvider创建一个content类型的Uri
+            imageUri=FileProvider.getUriForFile(this, "com.xingcheng.programme.fileprovider", new File(selectPath));//通过FileProvider创建一个content类型的Uri
+            outputUri = Uri.fromFile(new File(path));
+        } else {
+            imageUri = Uri.fromFile(file);
+            outputUri = Uri.fromFile(new File(path));
+        }
+        intent.setDataAndType(imageUri, "image/*");
         // crop为true是设置在开启的intent中设置显示的view可以剪裁
         intent.putExtra("crop", "true");
+        intent.putExtra("scale",true);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+        intent.putExtra("noFaceDetection", true); // no face detection
         intent.putExtra("aspectX", width);
         intent.putExtra("aspectY", height);
-
         // outputX,outputY 是剪裁图片的宽高
         intent.putExtra("outputX", width);
         intent.putExtra("outputY", height);
-        intent.putExtra("return-data", true);
 
         startActivityForResult(intent, Global.PHOTO_REQUEST_CUT);
     }
