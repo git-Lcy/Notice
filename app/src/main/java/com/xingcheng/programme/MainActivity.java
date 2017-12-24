@@ -156,7 +156,12 @@ public class MainActivity extends BaseActivity  {
                             imageUri = FileProvider.getUriForFile(MainActivity.this,"com.xingcheng.programme.fileprovider",outputImage);
                             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); //添加这一句表示对目标应用临时授权该Uri所代表的文件
                         }else {
-                            outputImage.mkdirs();
+                            try {
+                                outputImage.createNewFile();
+                            } catch (IOException e) {
+                                outputImage.mkdirs();
+                            }
+
                             imageUri = Uri.fromFile(outputImage);
                         }
                         intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);//设置Action为拍照
@@ -231,8 +236,10 @@ public class MainActivity extends BaseActivity  {
         //获取默认铃声路径
         SharedPreferences preferences = getSharedPreferences(Global.MUSIC_URL_NAME,Context.MODE_PRIVATE);
         Global.MUSIC_URL = preferences.getString(Global.MUSIC_URL_NAME,"无");
+
         Drawable drawable = BitmapDrawable.createFromPath(path);//从路径中读取图片
         if (drawable!=null) mainSkin.setBackground(drawable);//设置背景
+
         handle = new MyHandler(this);
         adapter = new ProgrammeAdapter(MainActivity.this);
         manager = new LinearLayoutManager(this);
@@ -287,7 +294,6 @@ public class MainActivity extends BaseActivity  {
                 }else {
                     mDatePicker.setVisibility(View.VISIBLE);
                 }
-
             }
         });
 
@@ -412,6 +418,7 @@ public class MainActivity extends BaseActivity  {
                 startPhotoZoom(imagePath);
                 break;
             case Global.AUDIO_REQUEST_CODE://选择铃声回调
+                if (data==null) break;
                 String musicPath = L.handleImage(this,data);
                 if (TextUtils.isEmpty(musicPath)) {
                     L.toast(this,"选择铃声失败");
@@ -424,7 +431,7 @@ public class MainActivity extends BaseActivity  {
 
                 Global.MUSIC_URL = musicPath;
                 break;
-            case Global.PHOTO_REQUEST_CUT:
+            case Global.PHOTO_REQUEST_CUT://图片裁减回调
                 Drawable drawable = BitmapDrawable.createFromPath(path);
                 if (drawable==null) break;
                 mainSkin.setBackground(drawable);
@@ -436,7 +443,7 @@ public class MainActivity extends BaseActivity  {
     private Programme setTimer(String message){
         final Programme p = new Programme(message);
 
-        final String execute;
+    //    final String execute;
         final Calendar c = Calendar.getInstance(Locale.CHINA);
         if (!calendar.isChecked()) {
             setDate();
@@ -477,7 +484,7 @@ public class MainActivity extends BaseActivity  {
                     L.e("setTimer",String.valueOf(System.currentTimeMillis()));
                     L.e("setTimer",p.toString());
 
-                    if (executeTime-System.currentTimeMillis() <5*1000) return;
+                    if (executeTime-System.currentTimeMillis() <3*1000) return;
 					
 					//添加闹钟
                     AlarmManager manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
@@ -629,7 +636,7 @@ public class MainActivity extends BaseActivity  {
                     weakReference.get().adapter.insertProgramme(programme);
                     weakReference.get().moveToPosition();
                     break;
-                case MyRecognizerListener.MSG_PARSE_ERR:
+                case MyRecognizerListener.MSG_PARSE_ERR://语音解析失败
                     if (weakReference.get().voiceInput.isPressed()){
                         weakReference.get().voiceInput.setPressed(false);
                     }
@@ -640,6 +647,7 @@ public class MainActivity extends BaseActivity  {
 
     }
 
+    // RecyclerView回到顶部
     private void moveToPosition() {
 
         int firstItem = manager.findFirstVisibleItemPosition();
@@ -655,38 +663,13 @@ public class MainActivity extends BaseActivity  {
 
     }
 
-    //复制背景图片到指定目录
-    private void corpImage(final String oldPath){
-        ThreadPoolManager.getInstance().addTask(new Runnable() {
-            @Override
-            public void run() {
-                try {
-
-                    int byteRead = 0;
-                    File oldFile = new File(oldPath);
-                    if (oldFile.exists()) {//文件存在时
-                        InputStream inStream = new FileInputStream(oldPath);//读入原文件
-                        FileOutputStream fs = new FileOutputStream(path);
-                        byte[] buffer = new byte[1024];
-
-                        while ((byteRead = inStream.read(buffer)) != -1) {
-
-                            fs.write(buffer, 0, byteRead);
-                        }
-                        inStream.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+    //图片裁减
     private void startPhotoZoom(String selectPath) {
         Uri imageUri;
         Uri outputUri;
         File file=new File(path);
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        Intent intent = new Intent("com.android.camera.action.CROP");//调用系统裁剪
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { //android7.0及以上
             //添加这一句表示对目标应用临时授权该Uri所代表的文件
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             //通过FileProvider创建一个content类型的Uri
@@ -699,9 +682,11 @@ public class MainActivity extends BaseActivity  {
         intent.setDataAndType(imageUri, "image/*");
         // crop为true是设置在开启的intent中设置显示的view可以剪裁
         intent.putExtra("crop", "true");
-        intent.putExtra("scale",true);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
-        intent.putExtra("noFaceDetection", true); // no face detection
+        intent.putExtra("scale",true);//缩放
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);//输出路径
+        intent.putExtra("noFaceDetection", true); // 取消人脸识别
+
+        //宽高比
         intent.putExtra("aspectX", width);
         intent.putExtra("aspectY", height);
         // outputX,outputY 是剪裁图片的宽高
@@ -710,18 +695,21 @@ public class MainActivity extends BaseActivity  {
 
         startActivityForResult(intent, Global.PHOTO_REQUEST_CUT);
     }
-	
+
+    //监听按键
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event){
-        L.e("KeyEvent","---keyCode ="+keyCode );
-        L.e("KeyEvent","---getAction ="+event.getAction() );
-        if (keyCode==67 ){
+
+        if (keyCode==KeyEvent.KEYCODE_DEL ){ //删除键 Key code constant: Backspace key.
+
+            //隐藏软键盘
             if (textInput.hasFocus()){
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 if (imm !=null ){
                     imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
                 }
-                textInput.clearFocus();
+
+                textInput.clearFocus();//清除焦点
 
                 return true;
             }

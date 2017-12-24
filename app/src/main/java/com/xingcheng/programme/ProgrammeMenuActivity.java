@@ -118,7 +118,7 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.date_time_text:
+            case R.id.date_time_text://选择闹钟日期时间
                 if (dialog==null){
                     dialog = new AlertDialog.Builder(this).create();
                     dialog.show();
@@ -147,6 +147,7 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 mProgramme.setExecuteTime(String.valueOf(execute));
 
                 StringBuilder builder = new StringBuilder();
+                month++;
                 builder.append(year).append("-");
                 if (month<10) builder.append(0);
                 builder.append(month).append("-");
@@ -171,23 +172,23 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
                 repeatView.setText(repeat==0 ? "只提醒一次" : "每天" );
                 mProgramme.setRepeatType(repeat);
                 break;
-            case R.id.ringing:
+            case R.id.ringing://铃声
                 boolean isRing = !mProgramme.isRinging();
                 ringing.setText(isRing ? "开" : "关");
                 mProgramme.setRinging(isRing);
                 break;
-            case R.id.vibrate:
+            case R.id.vibrate://震动
                 boolean isVibrate = !mProgramme.isVibrate();
                 vibrate.setText(isVibrate ? "开" : "关");
                 mProgramme.setVibrate(isVibrate);
                 break;
-            case R.id.ringing_url:
+            case R.id.ringing_url://铃声路径
                 Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT);
 
                 pickIntent.setDataAndType(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio/*");
                 startActivityForResult(pickIntent, Global.AUDIO_REQUEST_CODE);
                 break;
-            case R.id.delete_notice:
+            case R.id.delete_notice://删除提醒
                 setResult(Global.EDIT_DELETE);
                 finish();
                 break;
@@ -218,6 +219,7 @@ public class ProgrammeMenuActivity extends BaseActivity implements View.OnClickL
         return super.onKeyDown(keyCode,event);
     }
 
+    //从铃声路径中解析出铃声名字
     private String getMusic(String musicPath){
         if (TextUtils.isEmpty(musicPath)) return "无";
         int index = musicPath.lastIndexOf("/")+1;

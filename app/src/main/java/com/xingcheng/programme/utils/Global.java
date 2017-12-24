@@ -36,15 +36,16 @@ public class Global {
     public static final int EDIT_DELETE = 2;
 
     public static final String MUSIC_URL_NAME = "music_url";
-    public static boolean VOICE_ENABLE;
+    public static boolean VOICE_ENABLE;//语音功能是否可用
     public static int index;
     public static Programme programme ;
     public static  List<ExtraProgramme> programmeList=new ArrayList<>();// 所有提醒列表
     public static  List<ExtraProgramme> programmeCache=new ArrayList<>();// 被选中提醒列表
     public static ArrayList<Integer> alarmRequestCodes = new ArrayList<>();
-    public static String MUSIC_URL;
+    public static String MUSIC_URL;//默认铃声路径
 
 
+    //获取被编辑的提醒
     public static Programme getEditProgramme(){
         if (programmeCache.size()==0){
             return programme;
@@ -75,6 +76,7 @@ public class Global {
     }
 
 
+    //清空选中的提醒
     public static boolean clearCache(){
         if (programmeCache.size()==0) return false;
         for (ExtraProgramme p : programmeCache){
@@ -84,23 +86,5 @@ public class Global {
         return true;
     }
 
-
-    @SuppressLint("SdCardPath")
-    public static void saveBitmap(String path,Bitmap bitmap) {
-        File tempFile = new File(path);
-        if (tempFile.exists()) {
-            tempFile.delete();
-        }
-        try {
-            FileOutputStream out = new FileOutputStream(tempFile);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            out.flush();
-            out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

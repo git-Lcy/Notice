@@ -40,6 +40,7 @@ public class MyRecognizerListener implements RecognizerListener {
     @Override
     public void onEndOfSpeech() {}
 
+    //语音解析结果
     @Override
     public void onResult(RecognizerResult recognizerResult, boolean b) {
         final String json = recognizerResult.getResultString();
@@ -66,6 +67,7 @@ public class MyRecognizerListener implements RecognizerListener {
     @Override
     public void onEvent(int i, int i1, int i2, Bundle bundle) {}
 
+    //处理JSON串
     private Runnable jsonRunnable = new Runnable() {
         @Override
         public void run() {

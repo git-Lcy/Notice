@@ -208,6 +208,8 @@ public class ProgrammeAdapter extends RecyclerView.Adapter {
             }
         }
         notifyDataSetChanged();
+
+        //撤销被删除 提醒 的 闹钟
         ThreadPoolManager.getInstance().addTask(new Runnable() {
             @Override
             public void run() {

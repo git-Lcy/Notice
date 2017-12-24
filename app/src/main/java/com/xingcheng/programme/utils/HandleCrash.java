@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -64,12 +65,9 @@ public class HandleCrash implements Thread.UncaughtExceptionHandler {
         if(throwable==null && null!=mDefaultHandler){
             mDefaultHandler.uncaughtException(thread,throwable);
         }else{
-            handleException();
-            try {
-                Thread.sleep(2000);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+     //       handleException();
+
+            SystemClock.sleep(200);
             Log.e(TAG, throwable.toString());
             Throwable cause = throwable.getCause();
             while (cause != null) {

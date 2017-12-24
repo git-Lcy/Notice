@@ -38,7 +38,8 @@
         </receiver>
         <activity
             android:name=".MainActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -46,15 +47,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ProgrammeMenuActivity"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
             android:name=".ProgrammeNoticeShowActivity"
             android:screenOrientation="portrait"
             android:excludeFromRecents="true"
-            android:launchMode="singleInstance">
+            android:launchMode="singleTask">
         </activity>
+        <activity
+            android:name=".ProgrammeMenuActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
     </application>
 
 </manifest>

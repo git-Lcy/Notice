@@ -35,6 +35,7 @@ public class L {
         toast.show();
     }
 
+    //从data中获取uri
     @TargetApi(19)
     public static String handleImage(Context context, Intent data) {
         String imagePath = null;

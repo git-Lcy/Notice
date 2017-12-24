@@ -14,6 +14,7 @@ import org.litepal.crud.DataSupport;
 
 /**
  * Created by lfy on 2017/12/9.
+ * 接收闹钟广播
  */
 
 public class AlarmBroadcastReceiver extends BroadcastReceiver {
@@ -31,7 +32,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
         Intent noticeIntent = new Intent(context, ProgrammeNoticeShowActivity.class);
         noticeIntent.putExtra("programmeId",id);
-    //    noticeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+     //   noticeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(noticeIntent);
     }
 }
